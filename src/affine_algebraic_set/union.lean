@@ -15,16 +15,16 @@ Latex statement of theorem:
 
 Let $k$ be a field and let $n$ be a natural number.
 
-Theorem. If $V$ and $w$ are two affine algebraic subsets of $k^n$
+Theorem. If $V$ and $W$ are two affine algebraic subsets of $k^n$
 then their union $V\cup W$ is also an affine algebraic subset of $k^n$.
 
-## Important definitions
-
-* 
-
-## Notation
-
+Idea of the proof: if $V$ is cut out by the set $S\subseteq k[X_1,X_2,…,X_n]$
+and $W$ is cut out by $T$, then $V\cup W$ is cut out by the set $ST:=\{st\,s\in S\mathrm{ and }t\in T\}.$
 ## Implementation notes
+
+I defined an affine algebraic set to be the zeros of an arbitrary
+set of functions, as opposed to just a finite set. We will see later
+on that these definitions are equivalent.
 
 ## References
 
@@ -86,7 +86,9 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
           -- simpa only [...]?
         rintro s hs t ht rfl,
         rw zeros_mul,
-        sorry
+        left,
+        apply hxV,
+        simp [hs],
 
       },
       {
