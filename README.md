@@ -11,4 +11,4 @@ I am following the lectures of Martin Orr. Many thanks to Martin for making his 
 
 Kevin Buzzard
 
-[Prove a theorem. Write a function](https://xenaproject.wordpress.com)
+[Prove a theorem. Write a function.](https://xenaproject.wordpress.com)
