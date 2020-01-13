@@ -104,9 +104,7 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         rintro u,
         -- Let's get the goal into the form we want
         suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-        -- a computer wrote the next line
-          simpa only [exists_prop, not_exists, not_and, and_imp, set.mem_set_of_eq, set.mem_Inter,
-          mv_polynomial.mem_zeros, exists_imp_distrib, this],
+        {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
         -- we need to show st(x)=0. Let's use the fact that x ∈ V... 
         have hx := hxV s,
@@ -122,8 +120,7 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         rw set.mem_Inter at hxW ⊢,
         rintro u,
           suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-          simpa only [exists_prop, not_exists, not_and, and_imp, set.mem_set_of_eq, set.mem_Inter,
-          mv_polynomial.mem_zeros, exists_imp_distrib, this],
+          {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
         have hx := hxW t,
         rw set.mem_Inter at hx,
