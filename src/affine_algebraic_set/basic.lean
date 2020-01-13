@@ -67,6 +67,8 @@ begin
   simp, -- TODO -- should I give the full proof here?
 end
 
+end mv_polynomial
+
 open mv_polynomial
 
 /-- An affine algebraic subset of kⁿ is the common zeros of a set of polynomials -/
@@ -97,3 +99,5 @@ end
 /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
 instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
 ⟨λ x V, x ∈ V.carrier⟩
+
+end affine_algebraic_set

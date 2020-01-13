@@ -18,22 +18,13 @@ Let $k$ be a field and let $n$ be a natural number.
 Theorem. If $V$ and $w$ are two affine algebraic subsets of $k^n$
 then their union $V\cup W$ is also an affine algebraic subset of $k^n$.
 
-
-This file defines affine algebraic subsets of affine n-space and proves basic properties
-about them.
-
 ## Important definitions
 
-* `affine_algebraic_set k` -- the type of affine algebraic sets over the field `k`.
+* 
 
 ## Notation
 
-None as yet -- do we need 𝔸ⁿ for affine n-space?
-
 ## Implementation notes
-
-Much, but not all, of this file assumes that `k` is algebraically closed.
-Remark: analysis/complex/polynomial.lean contains proof that ℂ is alg closed.
 
 ## References
 
@@ -61,23 +52,6 @@ open mv_polynomial
 namespace affine_algebraic_set
 
 -- Now some basic facts about affine algebrai subsets.
-
-
-set_option trace.simplify.rewrite false
-set_option trace.simplify.rewrite true
-
-/-- Two affine algebraic subsets with the same carrier are equal! -/
-lemma ext (V W : affine_algebraic_set k n) : V.carrier = W.carrier → V = W :=
-begin
-  intro h,
-  cases V,
-  cases W,
-  simpa, -- TODO -- why no debugging output?
-end
-
-/-- We can talk about elements of affine algebraic subsets of kⁿ  -/
-instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
-⟨λ x V, x ∈ V.carrier⟩
 
 /-- The union of two algebraic subsets of kⁿ is an algebraic subset-/
 def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
