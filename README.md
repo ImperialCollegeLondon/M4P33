@@ -7,7 +7,7 @@ In Jan to March 2020 I am teaching an algebraic geometry course at Imperial Coll
 
 Hendrik Lenstra once told me that you only really learn something when you teach it. I have never really learnt this theory properly up until now, and I thought that one way I could try and understand the material better would be to formalise it all in the Lean Theorem Prover. Many thanks to Hendrik for his years of sound advice.
 
-I am following the lectures of Martin Orr. Many thanks to Martin for making his notes available to me.
+I am following [the lecture notes of Martin Orr](https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/). Thanks Martin for making such nice notes and also making them available.
 
 If you just want to browse at some of the code, [here is what we talked about in Lecture 1](https://github.com/ImperialCollegeLondon/M4P33/blob/master/src/affine_algebraic_set/union.lean). If you want to go further, and learn about how to formalise this kind of level of algebraic geometry yourself, you could consider installing the repository, following the instructions below.
 
