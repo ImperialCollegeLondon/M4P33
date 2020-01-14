@@ -4,10 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Buzzard, and whoever else wants to join in.
 -/
 
-import for_mathlib.algebraically_closed
 import data.mv_polynomial
+
 -- We want to be able to talk about V ⊆ W if V and W are affine algebraic sets
--- We will need import order.lattice 
+-- We will need import order.lattice at some point.
+
 /-!
 # Affine algebraic sets
 
@@ -16,7 +17,7 @@ about them.
 
 ## Important definitions
 
-* `affine_algebraic_set k` -- the type of affine algebraic sets over the field `k`.
+* `affine_algebraic_set k n` -- the type of affine algebraic subsets of kⁿ.
 
 ## Notation
 
@@ -24,12 +25,11 @@ None as yet -- do we need 𝔸ⁿ for affine n-space?
 
 ## Implementation notes
 
-Much, but not all, of this file assumes that `k` is algebraically closed.
-Remark: analysis/complex/polynomial.lean contains proof that ℂ is alg closed.
+None yet. 
 
 ## References
 
-Martin Orr's lecture notes!
+Martin Orr's lecture notes https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
 
 ## Tags
 
@@ -52,7 +52,7 @@ namespace mv_polynomial -- means "multivariable polynomial"
 
 /-- The set of zeros in kⁿ of a function f ∈ k[X₁, X₂, ..., Xₙ] -/
 def zeros (f : mv_polynomial (fin n) k) : set (fin n → k) :=
-{x | f.eval x = 0}
+{x | f.eval x = 0} -- I just want to write f(x) = 0 really
 
 /-- x is in the zeros of f iff f(x) = 0 -/
 @[simp] lemma mem_zeros (f : mv_polynomial (fin n) k) (x : fin n → k) :
