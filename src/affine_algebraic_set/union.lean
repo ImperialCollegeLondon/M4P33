@@ -11,24 +11,26 @@ import affine_algebraic_set.basic -- the basic theory of affine algebraic sets.
 /-
 # The union of two affine algebraic sets is affine.
 
-Pseudo-Latex statement of theorem:
+Let k be a field and let n be a natural number. We prove the following
+theorem in this file:
 
-Let $k$ be a field and let $n$ be a natural number.
+Theorem. If V and W are two affine algebraic subsets of kⁿ
+then their union V ∪ W is also an affine algebraic subset of kⁿ.
 
-Theorem. If $V$ and $W$ are two affine algebraic subsets of $k^n$
-then their union $V\cup W$ is also an affine algebraic subset of $k^n$.
+```lean
+def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n
+```
 
-Maths proof: if $V$ is cut out by the set $S ⊆ k[X_1,X_2,…,X_n]$
-and $W$ is cut out by $T$, then $V ∪ W$ is cut out by the set $ST := {st | s ∈ S and t ∈ T}.$
-To prove that $ST$ cuts out $V ∪ W$, we prove both inclusion separately.
+Maths proof: if V is cut out by the set S ⊆ k[X_1,X_2,…,X_n]
+and W is cut out by T, then we claim V ∪ W is cut out by the set ST := { s*t | s ∈ S and t ∈ T}.
+To prove that the set cut out by ST equals V ∪ W, we prove both inclusion separately.
 
-If $x ∈ V ∪ W$ then either every element of $S$ vanishes at $x$ or every element of $T$ vanishes on $x$,
-and either way every element of $ST$ vanishes at $x$.
+One inclusion is very easy. If x ∈ V ∪ W then either every element of S vanishes at x or every
+element of T vanishes on x, and either way every element of ST vanishes at x.
 
-Conversely, if $x$ vanishes at every element of $ST$, then we want to prove that $x ∈ V ∪ W$. Suppose
-for a contradiction that $x$ is in neither $V$ nor $W$. By definition, this means that there must
-be some polynomials $s ∈ S$ and $t ∈ T$ such that $x$ it is not a zero of either $s$ or $t$. Hence
-$x$ is not a zero of $st ∈ ST$, a contradiction.
+Conversely, if x vanishes at every element of ST, then we want to prove that x ∈ V ∪ W. If x is
+in V then we're done. If not, then this means that there exists some s ∈ S with s(x) ≠ 0. 
+Then for every t ∈ T, we have s(x)t(x)=st(x)=0, and hence t(x)=0, which implies that x is in W.
 
 ## Implementation notes
 
@@ -37,8 +39,9 @@ set of functions, as opposed to just a finite set. We will see later
 on that these definitions are equivalent.
 
 If V is an affine algebraic set, then V is a pair. The first
-element of the pair is a subset V.carrier ⊆ k^n. The second
-element of the pair is the proof that there exists a subset S of k[X_1,X_2,...,X_n]
+element of the pair is a subset V.carrier ⊆ kⁿ, but which we try to just call V (there is
+a coercion from affine algebraic sets to subsets of kⁿ).
+The second element of the pair is the proof that there exists a subset S of k[X_1,X_2,...,X_n]
 such that V is cut out by S, by which I mean that V is the set of x ∈ k^n which vanish
 at each element of S.
 
@@ -51,32 +54,43 @@ Martin Orr's lecture notes!
 algebraic geometry, algebraic variety
 -/
 
+-- end of docstring; code starts here. 
+
+-- We're proving theorems about affine algebraic sets so the names of the theorems
+-- should start with "affine_algebraic_set".
+namespace affine_algebraic_set
+
 -- let k be a field
 variables {k : Type*} [discrete_field k]
 
 -- and let n be a natural number
 variable {n : ℕ}
 
+-- We're working with multivariable polynomials, so let's get access to their notation
 open mv_polynomial
 
-namespace affine_algebraic_set
+-- Now here's the bad news. 
 
--- Unfortunately the notation here looks intimidating, but one can get used to it.
+-- Lean notation for kⁿ is `fin n → k`.
+-- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial (fin n) k`.
+-- Lean notation for the subsets of X is `set X`
 
--- In Lean, the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is
--- denoted `mv_polynomial (fin n) k`. Here `fin n` is the type {0,1,2,...,(n-1)}.
-
--- Equally confusingly, 
--- The set kⁿ is denoted `fin n → k` (which means all maps from {0,1,2,...,(n-1)} to k).
-
--- Now some basic facts about affine algebraic sets.
+-- Now here's a basic fact about affine algebraic sets.
 
 /-- The union of two algebraic subsets of kⁿ is an algebraic subset-/
 def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
-{ carrier := V.carrier ∪ W.carrier, -- the underlying set is the union of the two sets defining V and W
-  is_algebraic :=
-  -- We now need to prove that this union is cut out by some set of polynomials.
+{ carrier := V ∪ W, -- the underlying set is the union of the two sets defining V and W
+  is_algebraic' :=
+  -- We now need to prove that the union of V and W is cut out by some set of polynomials.
   begin
+    -- Now here's the bad news. 
+
+    -- Lean notation for kⁿ is `fin n → k`.
+    -- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial (fin n) k`.
+    -- Lean notation for the subsets of X is `set X`
+    show 
+    ∃ (U : set (mv_polynomial (fin n) k)),
+      (V : set _) ∪ W = ⋂ (f : mv_polynomial (fin n) k) (H : f ∈ U), zeros f,
     -- say S is the set that defines V
     cases V.is_algebraic with S hS,
     -- and T is the set that defines W
@@ -106,15 +120,16 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
         {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
-        -- we need to show st(x)=0. Let's use the fact that x ∈ V... 
-        have hx := hxV s,
-        rw set.mem_Inter at hx,
-        -- ...and hence s(x) = 0
-        replace hx : eval x s = 0 := hx hs,
+        -- we need to show st(x)=0.
+        -- Because x ∈ V, we have s(x)=0. 
+        have hx := set.mem_Inter.1 (hxV s) hs,
+        change s.eval x = 0 at hx,
+        -- It suffices to show s(x)*t(x)=0
         rw eval_mul,
-        --But s ∈ S so x vanishes at s
-        -- and hence st(x)=s(x)t(x)=0*t(x)=0.
-        rw hx, simp,
+        -- but s(x) = 0,
+        rw hx,
+        -- and now it's obvious
+        apply zero_mul,
       },
       { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument.
         rw set.mem_Inter at hxW ⊢,
@@ -136,7 +151,7 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         simpa using hx,
       classical, -- in this next bit we assume the law of the excluded middle
       -- If x ∈ V then it's easy...
-      by_cases hx2 : x ∈ V.carrier,
+      by_cases hx2 : x ∈ (V : set _),
         left, rwa ←hS,
       -- so let's assume x ∉ V.
       -- We deduce that there's s ∈ S such that s(x) ≠ 0

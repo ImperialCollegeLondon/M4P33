@@ -81,14 +81,25 @@ structure affine_algebraic_set (k : Type*) [comm_ring k] (n : ℕ) :=
 (carrier : set (fin n → k)) 
 -- ...such that there's a set of polynomials such that the carrier is equal to the 
 -- intersection of the zeros of the polynomials in the set.
-(is_algebraic : ∃ S : set (mv_polynomial (fin n) k), carrier = ⋂ f ∈ S, zeros f) -- ...such that
+(is_algebraic' : ∃ S : set (mv_polynomial (fin n) k), carrier = ⋂ f ∈ S, zeros f) -- ...such that
 
 namespace affine_algebraic_set
+
+-- this is invisible notation so mathematicians don't need to understand the definition
+instance : has_coe_to_fun (affine_algebraic_set k n) :=
+{ F := λ _, _,
+  coe := carrier
+}
+
+-- use `is_algebraic'` not `is_alegbraic` because the notation's right -- no "carrier".
+def is_algebraic (V : affine_algebraic_set k n) :
+  ∃ S : set (mv_polynomial (fin n) k), (V : set _) = ⋂ f ∈ S, zeros f :=
+affine_algebraic_set.is_algebraic' V
 
 -- Now some basic facts about affine algebraic subsets. 
 
 /-- Two affine algebraic subsets with the same carrier are equal! -/
-lemma ext (V W : affine_algebraic_set k n) : V.carrier = W.carrier → V = W :=
+lemma ext (V W : affine_algebraic_set k n) : (V : set _) = W → V = W :=
 begin
   intro h,
   cases V,
@@ -96,15 +107,10 @@ begin
   simpa, -- TODO -- why no debugging output?
 end
 
-/-- We can talk about elements of affine algebraic subsets of kⁿ  -/
-instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
-⟨λ x V, x ∈ V.carrier⟩
-
--- this is invisible notation so mathematicians don't need to understand the definition
-instance : has_coe_to_fun (affine_algebraic_set k n) :=
-{ F := λ _, _,
-  coe := carrier
-}
+-- Do I want this instance?
+-- /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
+-- instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
+-- ⟨λ x V, x ∈ V.carrier⟩
 
 -- Computer scientists insist on using ≤ for any order relation such as ⊆ .
 -- It is some sort of problem with notation I think. 
