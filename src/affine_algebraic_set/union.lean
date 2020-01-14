@@ -47,7 +47,7 @@ at each element of S.
 
 ## References
 
-Martin Orr's lecture notes!
+Martin Orr's lecture notes at https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
 
 ## Tags
 
@@ -68,12 +68,6 @@ variable {n : ℕ}
 
 -- We're working with multivariable polynomials, so let's get access to their notation
 open mv_polynomial
-
--- Now here's the bad news. 
-
--- Lean notation for kⁿ is `fin n → k`.
--- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial (fin n) k`.
--- Lean notation for the subsets of X is `set X`
 
 -- Now here's a basic fact about affine algebraic sets.
 
