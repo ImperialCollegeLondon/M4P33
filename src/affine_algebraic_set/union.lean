@@ -23,7 +23,7 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n
 
 Maths proof: if V is cut out by the set S ⊆ k[X_1,X_2,…,X_n]
 and W is cut out by T, then we claim V ∪ W is cut out by the set ST := { s*t | s ∈ S and t ∈ T}.
-To prove that the set cut out by ST equals V ∪ W, we prove both inclusion separately.
+To prove that the set cut out by ST equals V ∪ W, we prove both inclusions separately.
 
 One inclusion is very easy. If x ∈ V ∪ W then either every element of S vanishes at x or every
 element of T vanishes on x, and either way every element of ST vanishes at x.
