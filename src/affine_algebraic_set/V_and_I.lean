@@ -32,15 +32,15 @@ Exercise: how do you think you type ℂ in VS Code?
 
 ## Important definitions
 
-* `𝕍 : _ 
+* `𝕍 : set (mv_polynomial (fin n) k) → affine_algebraic_set k n` 
   sending a subset of k[X₁,X₂,…Xₙ] to an affine algebraic subset of kⁿ
 
-* 𝕀 : _
-  sending an affine algebraic subset of kⁿ to an ideal of k[X₁,X₂,…Xₙ]
+* `𝕀 : set (fin n → k) → ideal (mv_polynomial (fin n) k)`
+  sending a subset of kⁿ to an ideal of k[X₁,X₂,…Xₙ]
 
 ## Notation
 
-Any comments about canonical forms for `simp` need to go here
+Nothing worth mentioning here yet.
 
 ## 
 
@@ -116,6 +116,8 @@ begin
   -- then s ∈ T so we're done
   exact hx _ (hST hs),
 end
+
+-- TODO: Probably 𝕍 is some kind of morphism of lattices?
 
 end 𝕍
 
