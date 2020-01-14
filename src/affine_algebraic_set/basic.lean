@@ -34,8 +34,8 @@ Martin Orr's lecture notes!
 algebraic geometry, algebraic variety
 -/
 
--- let k be a field
-variables {k : Type*} [discrete_field k]
+-- let k be a commutative ring
+variables {k : Type*} [comm_ring k]
 
 -- and let n be a natural number
 variable {n : ℕ}
@@ -56,8 +56,10 @@ def zeros (f : mv_polynomial (fin n) k) : set (fin n → k) :=
 @[simp] lemma mem_zeros (f : mv_polynomial (fin n) k) (x : fin n → k) :
   x ∈ f.zeros ↔ f.eval x = 0 := iff.rfl
 
+-- note that the next result needs that k is a field. 
+
 /-- The zeros of f * g are the union of the zeros of f and of g -/
-lemma zeros_mul (f g : mv_polynomial (fin n) k) :
+lemma zeros_mul {k : Type*} [discrete_field k] (f g : mv_polynomial (fin n) k) :
   zeros (f * g) = zeros f ∪ zeros g :=
 begin
   -- two sets are equal if they have the same elements
@@ -72,7 +74,7 @@ end mv_polynomial
 open mv_polynomial
 
 /-- An affine algebraic subset of kⁿ is the common zeros of a set of polynomials -/
-structure affine_algebraic_set (k : Type*) [discrete_field k] (n : ℕ) := 
+structure affine_algebraic_set (k : Type*) [comm_ring k] (n : ℕ) := 
 -- a subset of the set of maps {0,1,2,...,n-1} → k (called "carrier")
 (carrier : set (fin n → k)) 
 -- ...such that there's a set of polynomials such that the carrier is equal to the 
@@ -81,11 +83,7 @@ structure affine_algebraic_set (k : Type*) [discrete_field k] (n : ℕ) :=
 
 namespace affine_algebraic_set
 
--- Now some basic facts about affine algebrai subsets. 
-
-
-set_option trace.simplify.rewrite false
-set_option trace.simplify.rewrite true
+-- Now some basic facts about affine algebraic subsets. 
 
 /-- Two affine algebraic subsets with the same carrier are equal! -/
 lemma ext (V W : affine_algebraic_set k n) : V.carrier = W.carrier → V = W :=
