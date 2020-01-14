@@ -99,9 +99,11 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
     -- the zeros of U are exactly the union of the zeros of S and of T.
     -- Here's how to do it.
     use {u | ∃ (s ∈ S) (t ∈ T), u = s * t},
-    -- To prove that V ∪ W is defined by this set, we prove both inclusions
+    -- To prove that the affine algebraic set cut out by this collection of polynomials
+    -- is precisely the set V ∪ W, we check both inclusions.
     apply set.subset.antisymm,
-    { -- say x ∈ V ∪ W,
+    { -- Here's the easier of the two inclusions.
+      -- say x ∈ V ∪ W,
       intros x hx,
       -- it's either in V or W.
       cases hx with hxV hxW,
@@ -113,7 +115,8 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         rw set.mem_Inter,
         -- so let's take an element u of the form s * t
         rintro u,
-        -- Let's get the goal into the form we want
+        -- Let's now notice that the goal has got completely out of hand, and
+        -- simplify it back to ∀ s ∈ S and ∀ t ∈ T, (s * t)(x) = 0.
         suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
         {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
@@ -128,7 +131,8 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         -- and now it's obvious
         apply zero_mul,
       },
-      { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument.
+      { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument so I won't
+        -- comment it. Some sort of argument with the `wlog` tactic might be able to do this.
         rw set.mem_Inter at hxW ⊢,
         rintro u,
           suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
@@ -146,12 +150,12 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
       intros x hx,
       have hx' : ∀ u s : mv_polynomial (fin n) k, s ∈ S → ∀ t ∈ T, u = s * t → u.eval x = 0,
         simpa using hx,
-      classical, -- in this next bit we assume the law of the excluded middle
-      -- If x ∈ V then it's easy...
+      classical, -- We now proudly assume the law of the excluded middle.
+      -- If x ∈ V then the result is easy...
       by_cases hx2 : x ∈ (V : set _),
         left, rwa ←hS,
-      -- so let's assume x ∉ V.
-      -- We deduce that there's s ∈ S such that s(x) ≠ 0
+      -- ...so we can assume assume x ∉ V,
+      -- and hence that there's s ∈ S such that s(x) ≠ 0
       rw [hS, set.mem_Inter, not_forall] at hx2,
       cases hx2 with s hs,
       have hs2 : s ∈ S ∧ ¬eval x s = 0,
@@ -160,20 +164,21 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
       -- we now show x ∈ W
       right,
       rw set.mem_Inter,
-      -- so say t ∈ T
+      -- Say t ∈ T
       intro t,
+      -- We want to prove that t(x) = 0.
       suffices : t ∈ T → eval x t = 0,
         simpa,
       intro ht,
-      -- We want to prove t(x)=0. Now by assumption, x vanishes on s*t. 
+      -- Now by assumption, x vanishes on s * t. 
       replace hx' := hx' (s * t) s hsS t ht rfl,
-      -- so s(x)*t(x)=0
+      -- so s(x) * t(x) = 0
       rw eval_mul at hx',
-      -- so either s(x) or t(x) = 0, but we chose x such that s(x) ≠ 0.
+      -- so either s(x) or t(x) = 0, but we chose s such that s(x) ≠ 0.
       cases mul_eq_zero.1 hx' with hxs hxt,
-        -- s(x)=0 is a contradiction
+        -- So the case s(x) = 0 is a contradiction
         contradiction,
-      -- t(x) = 0 is what we wanted to prove
+      -- and t(x) = 0 is what we wanted to prove
       assumption
     }
   end
