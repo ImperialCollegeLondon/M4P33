@@ -39,7 +39,7 @@ set of functions, as opposed to just a finite set. We will see later
 on that these definitions are equivalent.
 
 If V is an affine algebraic set, then V is a pair. The first
-element of the pair is a subset V.carrier ⊆ kⁿ, but which we try to just call V (there is
+element of the pair is a subset V.carrier ⊆ kⁿ, but we will call this set V as well (there is
 a coercion from affine algebraic sets to subsets of kⁿ).
 The second element of the pair is the proof that there exists a subset S of k[X_1,X_2,...,X_n]
 such that V is cut out by S, by which I mean that V is the set of x ∈ k^n which vanish
