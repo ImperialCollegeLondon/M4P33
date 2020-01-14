@@ -9,6 +9,8 @@ Hendrik Lenstra once told me that you only really learn something when you teach
 
 I am following the lectures of Martin Orr. Many thanks to Martin for making his notes available to me.
 
+If you just want to browse at some of the code, [here is what we talked about in Lecture 1](https://github.com/ImperialCollegeLondon/M4P33/blob/master/src/affine_algebraic_set/union.lean). If you want to go further, and learn about how to formalise this kind of level of algebraic geometry yourself, you could consider installing the repository, following the instructions below.
+
 Kevin Buzzard
 
 ## Installation
