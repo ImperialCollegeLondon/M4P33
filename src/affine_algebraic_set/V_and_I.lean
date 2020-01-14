@@ -79,6 +79,24 @@ def 𝕍 : set (mv_polynomial (fin n) k) → affine_algebraic_set k n :=
   is_algebraic := ⟨by assumption, rfl⟩
 }
 
+namespace 𝕍
+
+-- facts about 𝕍
+lemma mem_iff (S : set (mv_polynomial (fin n) k)) (x : fin n → k) :
+  x ∈ ⇑(𝕍 S) ↔ ∀ s ∈ S, s.eval x = 0 := sorry
+
+/-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
+theorem sub_of_sub (S T : set (mv_polynomial (fin n) k)) :
+  S ⊆ T → 𝕍 T ⊆ 𝕍 S :=
+-- Say S ⊆ T and x ∈ 𝕍 T. 
+begin
+  intro hST,
+  intros x hx,
+  sorry
+end
+
+end 𝕍
+
 /-- 𝕀 : the function sending an affine algebraic subset of kⁿ to
   an ideal of k[X₁,X₂,…Xₙ], defined in Martin Orr's notes. -/
 def 𝕀 : affine_algebraic_set k n → ideal (mv_polynomial (fin n) k) := sorry

@@ -6,6 +6,8 @@ Authors: Kevin Buzzard, and whoever else wants to join in.
 
 import for_mathlib.algebraically_closed
 import data.mv_polynomial
+-- We want to be able to talk about V ⊆ W if V and W are affine algebraic sets
+-- We will need import order.lattice 
 /-!
 # Affine algebraic sets
 
@@ -97,5 +99,19 @@ end
 /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
 instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
 ⟨λ x V, x ∈ V.carrier⟩
+
+-- this is invisible notation so mathematicians don't need to understand the definition
+instance : has_coe_to_fun (affine_algebraic_set k n) :=
+{ F := λ _, _,
+  coe := carrier
+}
+
+-- Computer scientists insist on using ≤ for any order relation such as ⊆ .
+-- It is some sort of problem with notation I think. 
+instance : has_le (affine_algebraic_set k n) :=
+⟨λ V W, (V : set (fin n → k)) ⊆ W⟩
+/-- Mathematicians want to talk about affine algebraic subsets of kⁿ
+    as being subsets of one another -/
+instance : has_subset (affine_algebraic_set k n) := ⟨affine_algebraic_set.has_le.le⟩
 
 end affine_algebraic_set
