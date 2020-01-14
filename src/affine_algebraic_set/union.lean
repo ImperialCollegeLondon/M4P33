@@ -82,9 +82,12 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
     -- Lean notation for kⁿ is `fin n → k`.
     -- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial (fin n) k`.
     -- Lean notation for the subsets of X is `set X`
+
+    -- Let's state what we're trying to prove, using Lean's notation.
     show 
     ∃ (U : set (mv_polynomial (fin n) k)),
-      (V : set _) ∪ W = ⋂ (f : mv_polynomial (fin n) k) (H : f ∈ U), zeros f,
+      -- such that
+      (V : set _) ∪ W = ⋂ f ∈ U, zeros f,
     -- say S is the set that defines V
     cases V.is_algebraic with S hS,
     -- and T is the set that defines W
