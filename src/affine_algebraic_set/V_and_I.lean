@@ -73,7 +73,11 @@ variable {n : ℕ}
 
 /-- 𝕍 : the function sending a subset of k[X₁,X₂,…Xₙ] to an
   affine algebraic subset of kⁿ, define in Martin Orr's notes -/
-def 𝕍 : set (mv_polynomial (fin n) k) → affine_algebraic_set k n := sorry
+def 𝕍 : set (mv_polynomial (fin n) k) → affine_algebraic_set k n :=
+λ (S : set (mv_polynomial (fin n) k)),
+{ carrier := _,
+  is_algebraic := ⟨by assumption, rfl⟩
+}
 
 /-- 𝕀 : the function sending an affine algebraic subset of kⁿ to
   an ideal of k[X₁,X₂,…Xₙ], defined in Martin Orr's notes. -/
