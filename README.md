@@ -11,4 +11,31 @@ I am following the lectures of Martin Orr. Many thanks to Martin for making his 
 
 Kevin Buzzard
 
+## Installation
+
+### Step 1
+
+[Install Lean](https://github.com/leanprover-community/mathlib/blob/master/README.md#installation).
+
+### Step 2 
+
+Assuming you followed the instructions in Step 1, and have access to a command line, and you have got your
+PATH variable working correctly, then installing this project should be as simple as
+
+```
+git clone https://github.com/ImperialCollegeLondon/M4P33.git
+cd M4P33
+leanpkg configure
+update-mathlib
+```
+
+and then an optional last two lines
+
+```
+cd src
+lean --make
+```
+
+if you want to compile the project yourself.
+
 [Prove a theorem. Write a function.](https://xenaproject.wordpress.com)
