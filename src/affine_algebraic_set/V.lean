@@ -165,4 +165,57 @@ begin
   }
 end
 
+/-- Infinite unions work just the same -/
+theorem Union {I : Type*} (S : I → set (mv_polynomial n k)) :
+𝕍 (⋃ i, S i) = ⋂ i, 𝕍 (S i) :=
+begin
+  -- To prove equality of two subsets of kⁿ it suffices to prove ⊆ and ⊇.
+  apply set.subset.antisymm,
+  { -- Goal: 𝕍 (⋃ i, S i) ⊆ ⋂ i, 𝕍 (S i)
+    -- Let x be in the left hand side
+    intros x hx,
+    -- it suffices to prove that for all i, x ∈ 𝕍 (S i) 
+    rw set.mem_Inter,
+    -- so choose j
+    intro j,
+    -- and say f ∈ S j
+    intros f hf,
+    -- We now want to prove f(x) = 0.
+    -- Now we know x ∈ 𝕍 (⋃ i, S i), so g(x) = 0 for all g in ⋃ i, S i
+    -- Hence it suffices to prove that f ∈ ⋃ i, S i
+    apply hx,
+    -- By definition of the infinite union, it suffices to find i such that f ∈ S i
+    rw set.mem_Union,
+    -- and we can use j for this i
+    use j,
+    -- and what we need to show is true now by assumption, because f ∈ S j
+    assumption
+  },
+  { -- Now the other way.
+    -- ⊢ (⋂ (i : I), 𝕍 (S i)) ⊆ 𝕍 (⋃ (i : I), S i)
+    -- Say x is in the left hand side
+    intros x hx,
+    -- It suffices to show that for all f ∈ ⋃ i, S i, f(x) = 0
+    rw mem_iff,
+    -- so say f is a polynomial in this union
+    intros f hf,
+    -- If f is in the union, then it's in one of the S i, so say f ∈ S j
+    rw set.mem_Union at hf,
+    cases hf with j hj,
+    -- Now we know x is in the intersection of the 𝕍 (S i) for all i,
+    -- so x ∈ 𝕍 (S j)
+    rw set.mem_Inter at hx,
+    have hxj := hx j,
+    -- and because f(x) = 0 for every element of S j, and f ∈ S j, we know f(x) = 0
+    exact hxj _ hj
+  }
+end
+
+theorem mul (S T : set (mv_polynomial n k)) :
+𝕍 ({u | ∃ (s ∈ S) (t ∈ T), u = s * t}) = 𝕍 S ∪ 𝕍 T :=
+begin
+  -- We've done this before, right?
+  sorry
+end
+
 end affine_algebraic_set.𝕍
