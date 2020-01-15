@@ -69,6 +69,9 @@ variable {n : Type*}
 * subsets of a set X are denoted
   `set X`
 
+* The subset of X which is all of X is not called X! It's called
+  `univ`
+
 * To evaluate a polynomial f on a vector x, we seem to have to write
   `eval x f`
   Note the order! "Maps on the right".
@@ -120,7 +123,7 @@ begin
   -- so say x ∈ kⁿ
   intro x,
   -- we need to check that it's not true that for every polynomial f, f(x) = 0
-  rw 𝕍,
+  rw mem_𝕍_iff,
   -- so let's assume that f(x) = 0 for every polynomial f,
   intro h,
   -- and get a contradiction (note that the goal is now `false`).
@@ -132,42 +135,82 @@ begin
   exact zero_ne_one h.symm 
 end
 
+/-- 𝕍({0}) = kⁿ -/
 lemma 𝕍_zero : 𝕍 ({0} : set (mv_polynomial n k)) = univ :=
 begin
-  sorry
+  -- It suffices to prove every element of kⁿ is in 𝕍(0)
+  rw eq_univ_iff_forall,
+  -- so say x ∈ kⁿ
+  intro x,
+  -- To prove it's in V(0), we need to show f(x)=0 for all f in {0} 
+  rw mem_𝕍_iff,
+  -- so take f in {0}
+  intros f hf,
+  -- Then it's zero!
+  rw mem_singleton_iff at hf, 
+  -- so we have to prove 0(x) = 0
+  rw hf,
+  -- which is obvious
+  refl,
+end
+
+/-- If k ≠ 0 then 𝕍({1}) = ∅ -/
+lemma 𝕍_one {k : Type*} [nonzero_comm_ring k] {n : Type*} :
+  𝕍 ({1} : set (mv_polynomial n k)) = ∅ :=
+begin
+  -- this is basically the same proof as 𝕍_univ
+  -- It suffices to show that for all x ∈ kⁿ, x isn't in 𝕍 ({1})
+  rw eq_empty_iff_forall_not_mem,
+  -- so say x ∈ kⁿ
+  intro x,
+  -- we need to check that it's not true that for all f ∈ {1}, f(x) = 0
+  rw mem_𝕍_iff,
+  -- so let's assume that f(x) = 0 for every polynomial f in {1},
+  intro h,
+  -- and get a contradiction (note that the goal is now `false`).
+  -- Setting f = 1, we deduce 1(x) = 0.
+  replace h := h (C 1) (mem_singleton _),
+  -- evaluating the polynomial 1 at x gives the value 1
+  rw eval_C at h,
+  -- so 1 = 0 in k, which contradicts k being non-zero
+  exact zero_ne_one h.symm 
 end
 
 /-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
 theorem 𝕍_antimono (S T : set (mv_polynomial n k)) :
   S ⊆ T → 𝕍 T ⊆ 𝕍 S :=
 begin
--- Say S ⊆ T and x ∈ 𝕍 T. 
+  -- We are assuming S ⊆ T
   intro hST,
+  -- Let x ∈ 𝕍 T be arbitrary 
   intros x hx,
   -- We want to prove x ∈ 𝕍 S.
   -- We know that ∀ t ∈ T, t(x) = 0, and we want to
   -- prove that ∀ s ∈ S, s(x) = 0. 
-  rw 𝕍 at hx ⊢,
+  rw mem_𝕍_iff at hx ⊢,
   -- So say s ∈ S.
   intros s hs,
-  -- then s ∈ T so we're done
-  exact hx _ (hST hs),
+  -- we want to prove s(x) = 0.
+  -- But t(x) = 0 for all t in T, so it suffices to prove s ∈ T
+  apply hx,
+  -- and this is clear because S ⊆ T
+  exact hST hs
 end
 
 theorem 𝕍_union (S T : set (mv_polynomial n k)) :
 𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
 begin
-  -- let's prove this by proving ⊆ and ⊇
+  -- let's prove this equality of sets by proving ⊆ and ⊇
   apply set.subset.antisymm,
   { -- goal : 𝕍 (S ∪ T) ⊆ 𝕍 S ∩ 𝕍 T
     -- so let x be an element of the LHS
     intros x hx,
     -- then x ∈ 𝕍 (S ∪ T) so ∀ f ∈ S ∪ T, f(x) = 0. Call this hypothesis `hx`.
-    rw 𝕍 at hx,
+    rw mem_𝕍_iff at hx,
     -- To prove x ∈ 𝕍 S ∩ 𝕍 T, it suffices to prove x ∈ 𝕍 S and x ∈ 𝕍 T
     split,
     { -- To prove x ∈ 𝕍 S, we need to show that for all f ∈ S, f(x) = 0
-      rw 𝕍,
+      rw mem_𝕍_iff,
       -- so say f ∈ S
       intros f hf,
       -- By hypothesis `hx`, it suffices to prove that f ∈ S ∪ T
@@ -192,7 +235,7 @@ begin
     cases hf,
     { -- Say f ∈ S
       -- Recall that x ∈ 𝕍 S, so ∀ f ∈ S, f(x) = 0
-      rw 𝕍 at hxS,
+      rw mem_𝕍_iff at hxS,
       -- so we're done.
       exact hxS f hf
     },
@@ -264,7 +307,7 @@ begin
     -- then x ∈ 𝕍 S or x ∈ 𝕍 T. So let x be in 𝕍 (S * T)
     intros x hx,
     -- We then know that for every f ∈ S * T, f(x) = 0
-    rw 𝕍 at hx,
+    rw mem_𝕍_iff at hx,
     classical, -- We now proudly assume the law of the excluded middle.
     -- If x ∈ 𝕍 S then the result is easy...
     by_cases hx2 : x ∈ 𝕍 S,
@@ -298,10 +341,10 @@ begin
     cases hx with hxS hxT,
     { -- Say x ∈ 𝕍 S.
       -- We know that x vanishes at every element of S.
-      rw 𝕍 at hxS,
+      rw mem_𝕍_iff at hxS,
       -- We want to prove x vanishes at every polynomial of the form s * t
       -- with s ∈ S and t ∈ T.
-      rw 𝕍,
+      rw mem_𝕍_iff,
       -- so let's take a polynomial of the form s * t
       rintro _ ⟨s, hs, t, ht, rfl⟩,
       -- we need to show st(x)=0. So it suffices to show s(x)*t(x)=0
