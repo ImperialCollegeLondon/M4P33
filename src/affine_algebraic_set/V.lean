@@ -251,12 +251,9 @@ begin
   }
 end
 
--- temp end because I need to fix proof below
-end affine_algebraic_set.𝕍 #exit
-
 instance : has_mul (set (mv_polynomial n k)) := ⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
 
-theorem mul (S T : set (mv_polynomial n k)) :
+theorem mul {k : Type*} [integral_domain k] {n : Type*} (S T : set (mv_polynomial n k)) :
 𝕍 (S * T) = 𝕍 S ∪ 𝕍 T :=
 begin
   -- to prove that the two sets are equal we will prove ⊆ and ⊇ 
@@ -274,72 +271,52 @@ begin
       exact subset_union_left _ _ hx2,
     -- ...so we can assume assume x ∉ 𝕍 S,
     -- and hence that there's s ∈ S such that s(x) ≠ 0
-    rw [hS, set.mem_Inter, not_forall] at hx2,
-    cases hx2 with s hs,
-    have hs2 : s ∈ S ∧ ¬eval x s = 0,
-      simpa using hs,
-    cases hs2 with hsS hns,
-    -- we now show x ∈ W
-    right,
-    rw set.mem_Inter,
-    -- Say t ∈ T
-    intro t,
+    rw mem_iff at hx2, push_neg at hx2, rcases hx2 with ⟨s, hs, hsx⟩,
+    -- we now show x ∈ 𝕍 T,
+      right,
+    -- i.e., that for all t ∈ T we have t(x) = 0
+    rw mem_iff,
+    -- So say t ∈ T
+    intros t ht,
     -- We want to prove that t(x) = 0.
-    suffices : t ∈ T → eval x t = 0,
-      simpa,
-    intro ht,
     -- Now by assumption, x vanishes on s * t. 
-    replace hx' := hx' (s * t) s hsS t ht rfl,
+    replace hx := hx (s * t) ⟨s, hs, t, ht, rfl⟩,
     -- so s(x) * t(x) = 0
-    rw eval_mul at hx',
-    -- so either s(x) or t(x) = 0, but we chose s such that s(x) ≠ 0.
-    cases mul_eq_zero.1 hx' with hxs hxt,
+    rw eval_mul at hx,
+    -- so either s(x) or t(x) = 0,
+    cases mul_eq_zero.1 hx with hxs hxt,
       -- So the case s(x) = 0 is a contradiction
       contradiction,
     -- and t(x) = 0 is what we wanted to prove
     assumption
   },
   { -- Here's the easier of the two inclusions.
-    -- say x ∈ V ∪ W,
+    -- say x ∈ 𝕍 S ∪ 𝕍 T,
     intros x hx,
-    -- it's either in V or W.
-    cases hx with hxV hxW,
-    { -- Say x ∈ V
+    -- it's either in 𝕍 S or 𝕍 T.
+    cases hx with hxS hxT,
+    { -- Say x ∈ 𝕍 S.
       -- We know that x vanishes at every element of S.
-      rw set.mem_Inter at hxV,
+      rw mem_iff at hxS,
       -- We want to prove x vanishes at every polynomial of the form s * t
       -- with s ∈ S and t ∈ T.
-      rw set.mem_Inter,
-      -- so let's take an element u of the form s * t
-      rintro u,
-      -- Let's now notice that the goal has got completely out of hand, and
-      -- simplify it back to ∀ s ∈ S and ∀ t ∈ T, (s * t)(x) = 0.
-      suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-      {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
-      rintro s hs t ht rfl,
-      -- we need to show st(x)=0.
-      -- Because x ∈ V, we have s(x)=0. 
-      have hx := set.mem_Inter.1 (hxV s) hs,
-      change s.eval x = 0 at hx,
-      -- It suffices to show s(x)*t(x)=0
+      rw mem_iff,
+      -- so let's take a polynomial of the form s * t
+      rintro _ ⟨s, hs, t, ht, rfl⟩,
+      -- we need to show st(x)=0. So it suffices to show s(x)*t(x)=0
       rw eval_mul,
-      -- but s(x) = 0,
-      rw hx,
-      -- and now it's obvious
-      apply zero_mul,
+      -- Because x ∈ 𝕍 S, we have s(x)=0.
+      replace hxS := hxS s hs,
+      -- so it suffices to show 0 * t(x) = 0
+      rw hxS,
+      -- but this is obvious
+      apply zero_mul, 
     },
-    { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument so I won't
-      -- comment it. Some sort of argument with the `wlog` tactic might be able to do this.
-      rw set.mem_Inter at hxW ⊢,
-      rintro u,
-        suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-        {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
-      rintro s hs t ht rfl,
-      have hx := hxW t,
-      rw set.mem_Inter at hx,
-      replace hx : eval x t = 0 := hx ht,
-      rw eval_mul,
-      rw hx, simp,
+    { -- This is the case x ∈ 𝕍 T and it's of course completely analogous.
+      -- If I knew more about Lean's `WLOG` tactic I might not have to do this case.
+      -- I'll just do it the computer science way
+      rintro _ ⟨s, hs, t, ht, rfl⟩,
+      rw [eval_mul, hxT t ht, mul_zero],
     }
   }
 end
