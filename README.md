@@ -40,4 +40,4 @@ lean --make
 
 if you want to compile the project yourself.
 
-[Prove a theorem. Write a function.](https://xenaproject.wordpress.com)
+[Prove a theorem. Write a function.](https://xenaproject.wordpress.com) The Xena project.
