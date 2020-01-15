@@ -117,6 +117,10 @@ begin
   exact hx _ (hST hs),
 end
 
+theorem union (S T : set (mv_polynomial (fin n) k)) :
+  𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
+
+
 -- TODO: Probably 𝕍 is some kind of morphism of lattices?
 
 end 𝕍

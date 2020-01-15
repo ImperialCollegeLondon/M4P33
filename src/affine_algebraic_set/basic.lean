@@ -99,7 +99,7 @@ affine_algebraic_set.is_algebraic' V
 -- Now some basic facts about affine algebraic subsets. 
 
 /-- Two affine algebraic subsets with the same carrier are equal! -/
-lemma ext (V W : affine_algebraic_set k n) : (V : set _) = W → V = W :=
+lemma ext {V W : affine_algebraic_set k n} : (V : set _) = W → V = W :=
 begin
   intro h,
   cases V,
@@ -116,8 +116,16 @@ end
 -- It is some sort of problem with notation I think. 
 instance : has_le (affine_algebraic_set k n) :=
 ⟨λ V W, (V : set (fin n → k)) ⊆ W⟩
+
+instance : partial_order (affine_algebraic_set k n) :=
+{ le := (≤),
+  le_refl := λ _ _, id,
+  le_trans := λ _ _ _, set.subset.trans,
+  le_antisymm := λ U V hUV hVU, ext (set.subset.antisymm hUV hVU)
+}
+
 /-- Mathematicians want to talk about affine algebraic subsets of kⁿ
-    as being subsets of one another -/
+    being subsets of one another -/
 instance : has_subset (affine_algebraic_set k n) := ⟨affine_algebraic_set.has_le.le⟩
 
 end affine_algebraic_set

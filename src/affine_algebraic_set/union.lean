@@ -17,9 +17,9 @@ theorem in this file:
 Theorem. If V and W are two affine algebraic subsets of kⁿ
 then their union V ∪ W is also an affine algebraic subset of kⁿ.
 
-```lean
-def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n
-```
+Lean version:
+
+`def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n`
 
 Maths proof: if V is cut out by the set S ⊆ k[X_1,X_2,…,X_n]
 and W is cut out by T, then we claim V ∪ W is cut out by the set ST := { s*t | s ∈ S and t ∈ T}.
