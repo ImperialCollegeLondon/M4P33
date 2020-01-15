@@ -1,14 +1,16 @@
 /-
+Algebraic geometry M4P33, Jan-Mar 2020, formalised in Lean.
+
 Copyright (c) 2020 Kevin Buzzard
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Kevin Buzzard, and whoever else wants to join in.
+Authors: Kevin Buzzard, and whoever else in the class wants to join in.
 -/
 
 -- imports the theory of multivariable polynomials over rings
 import data.mv_polynomial
 
 /-!
-# The 𝕍 construction
+# Lecture 2 : The 𝕍 construction
 
 Let k be a commutative ring and let n be a natural number.
 
@@ -23,9 +25,34 @@ arbitrary set n for our variables.
 
 All the definitions work for k a commutative ring, but not all
 of the the theorems do. However, computer scientists want us to set
-up the theory for commutative rings, and I believe that mathematicians
-should learn to think more like computer scientists. 
+up the theory in as much generality as possible, and I believe that
+mathematicians should learn to think more like computer scientists. 
 So k starts off being a commutative ring, and changes later.
+
+## Lean 3 notation: important comments.
+
+Because we're not using Lean 4, we will have to deal with some
+awkward notational issues.
+
+* the multivariable polynomial ring k[X₁,X₂,…,Xₙ] is denoted
+  `mv_polynomial n k`.
+
+* The set kⁿ is denoted
+  `n → k`.
+
+  (note: this means maps from n to k, and if you're thinking
+   about n as {1,2,3,...,n} then you can see that this makes sense).
+
+* subsets of a set X are denoted
+  `set X`
+
+* The subset of X which is all of X is not called X! It's called
+  `univ`
+
+* To evaluate a polynomial f on a vector x, we write
+  `eval x f`
+
+  Note the order! "Maps on the right".
 
 ## Important definitions
 
@@ -56,30 +83,17 @@ variables {k : Type*} [comm_ring k]
 -- We'll work with polynomials in variables X_i for i ∈ n.
 variable {n : Type*}
 
-/- Interlude: Lean 3 notation hell.
+/- recall:
 
-* the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is denoted
-  `mv_polynomial n k`.
-
-* The set kⁿ is denoted
-  `n → k`
-  (which means maps from n to k, and if you're thinking
-   about n as {1,2,3,...,n} then you can see that this makes sense).
-
-* subsets of a set X are denoted
-  `set X`
-
-* The subset of X which is all of X is not called X! It's called
-  `univ`
-
-* To evaluate a polynomial f on a vector x, we seem to have to write
-  `eval x f`
-  Note the order! "Maps on the right".
-
+     Maths                 Lean 3
+     k[X₁, X₂, ..., Xₙ]    mv_polynomial n k
+     kⁿ                    n → k
+     subsets of X          set X
+     f(x)                  eval x f
 -/
 
 /-- 𝕍 : the function sending a subset of k[X₁,X₂,…Xₙ] to an
-  affine algebraic subset of kⁿ, define in Martin Orr's notes -/
+  affine algebraic subset of kⁿ, defined in Martin Orr's notes -/
 def 𝕍 (S : set (mv_polynomial n k)) : set (n → k) :=
 {x : n → k | ∀ f ∈ S, eval x f = 0}
 
@@ -202,14 +216,15 @@ theorem 𝕍_union (S T : set (mv_polynomial n k)) :
 begin
   -- let's prove this equality of sets by proving ⊆ and ⊇
   apply set.subset.antisymm,
-  { -- goal : 𝕍 (S ∪ T) ⊆ 𝕍 S ∩ 𝕍 T
-    -- so let x be an element of the LHS
+  { -- Step 1: we prove the inclusion 𝕍 (S ∪ T) ⊆ 𝕍 S ∩ 𝕍 T.
+    -- So let x be an element of the LHS
     intros x hx,
     -- then x ∈ 𝕍 (S ∪ T) so ∀ f ∈ S ∪ T, f(x) = 0. Call this hypothesis `hx`.
     rw mem_𝕍_iff at hx,
     -- To prove x ∈ 𝕍 S ∩ 𝕍 T, it suffices to prove x ∈ 𝕍 S and x ∈ 𝕍 T
     split,
-    { -- To prove x ∈ 𝕍 S, we need to show that for all f ∈ S, f(x) = 0
+    { -- We deal with the two cases separately.
+      -- To prove x ∈ 𝕍 S, we need to show that for all f ∈ S, f(x) = 0
       rw mem_𝕍_iff,
       -- so say f ∈ S
       intros f hf,
@@ -220,15 +235,16 @@ begin
     },
     { -- To prove x ∈ 𝕍 T, the argument is the same,
       -- so we write it the way a computer scientist would.
-      -- (they prefer one line to four)
+      -- (they prefer one incomprehensible line to four simple ones)
       exact mem_𝕍_iff.2 (λ f hf, hx _ (set.subset_union_right _ _ hf)),
     },
   },
-  { -- ⊢ 𝕍 S ∩ 𝕍 T ⊆ 𝕍 (S ∪ T) (NB `⊢` means "the goal is")
+  { -- Step 2: we prove the other inclusion.
+    -- ⊢ 𝕍 S ∩ 𝕍 T ⊆ 𝕍 (S ∪ T) (NB `⊢` means "the goal is")
     -- say x is in 𝕍 S and 𝕍 T
     rintro x ⟨hxS, hxT⟩,
     -- We need to show that for all f ∈ S ∪ T, f(x) = 0
-    rw 𝕍,
+    rw mem_𝕍_iff,
     -- so choose f in S ∪ T
     intros f hf,
     -- Well, f is either in S or in T, so there are two cases.
@@ -279,7 +295,7 @@ begin
     -- Say x is in the left hand side
     intros x hx,
     -- It suffices to show that for all f ∈ ⋃ i, S i, f(x) = 0
-    rw 𝕍,
+    rw mem_𝕍_iff,
     -- so say f is a polynomial in this union
     intros f hf,
     -- If f is in the union, then it's in one of the S i, so say f ∈ S j
@@ -295,9 +311,14 @@ begin
   }
 end
 
-instance : has_mul (set (mv_polynomial n k)) := ⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
+-- For convenience, let's define multiplication on subsets of k[X₁,X₂,…,Xₙ]
+-- in the obvious way: S * T := {s * t | s ∈ S, t ∈ T}.
+instance : has_mul (set (mv_polynomial n k)) :=
+⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
 
-theorem 𝕍_mul {k : Type*} [integral_domain k] {n : Type*} (S T : set (mv_polynomial n k)) :
+-- For this theorem, we need that k satisfies a * b = 0 => a = 0 or b = 0
+theorem 𝕍_mul {k : Type*} [integral_domain k] {n : Type*}
+  (S T : set (mv_polynomial n k)) :
 𝕍 (S * T) = 𝕍 S ∪ 𝕍 T :=
 begin
   -- to prove that the two sets are equal we will prove ⊆ and ⊇ 
@@ -308,7 +329,9 @@ begin
     intros x hx,
     -- We then know that for every f ∈ S * T, f(x) = 0
     rw mem_𝕍_iff at hx,
-    classical, -- We now proudly assume the law of the excluded middle.
+    -- Note for logicians: in this proof, we will assume
+    -- the law of the excluded middle.
+    classical, 
     -- If x ∈ 𝕍 S then the result is easy...
     by_cases hx2 : x ∈ 𝕍 S,
       -- because 𝕍 S ⊆ 𝕍 S ∪ 𝕍 T
@@ -319,7 +342,7 @@ begin
     -- we now show x ∈ 𝕍 T,
       right,
     -- i.e., that for all t ∈ T we have t(x) = 0
-    rw 𝕍,
+    rw mem_𝕍_iff,
     -- So say t ∈ T
     intros t ht,
     -- We want to prove that t(x) = 0.
@@ -365,5 +388,11 @@ begin
     }
   }
 end
+
+#check integral_domain
+
+-- Pedantic exercise: we assumed a * b = 0 => a = 0 or b = 0. Give an
+-- example of a commutative ring with that property which is not an
+-- integral domain. Is the theorem still true for this ring?
 
 end affine_algebraic_set
