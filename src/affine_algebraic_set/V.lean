@@ -93,12 +93,31 @@ def 𝕍 (S : set (mv_polynomial n k)) : set (n → k) :=
 
 namespace affine_algebraic_set.𝕍
 
-variables (S T : set (mv_polynomial n k))
-variable (x : n → k)
+-- the theorems will be about sets, so let's open the set namespace
+-- giving us easier access to theorems about sets 
+
+open set
 
 /-- x ∈ 𝕍 S ↔ for all f ∈ S, f(x) = 0. This is true by definition. -/
 lemma mem_iff {S : set (mv_polynomial n k)} {x : n → k} :
   x ∈ 𝕍 S ↔ ∀ f ∈ S, eval x f = 0 := iff.rfl
+
+/-- 𝕍(∅) = kⁿ -/
+lemma empty : 𝕍 (∅ : set (mv_polynomial n k)) = univ :=
+begin
+  -- We need to show that for all x in kⁿ, x ∈ 𝕍 ∅
+  rw eq_univ_iff_forall,
+  -- so say x ∈ kⁿ,
+  intro x,
+  -- By definition of 𝕍, we need to check that f(x) = 0 for all f in ∅
+  rw mem_iff,
+  -- so say f is a polynomial
+  intro f,
+  -- and f is in the empty set
+  intro hf,
+  -- well, our assumptions give a contradiction, and we can deduce anything from a contradiction
+  cases hf,
+end
 
 /-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
 theorem antimono (S T : set (mv_polynomial n k)) :
@@ -211,8 +230,10 @@ begin
   }
 end
 
+instance : has_mul (set (mv_polynomial n k)) := ⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
+
 theorem mul (S T : set (mv_polynomial n k)) :
-𝕍 ({u | ∃ (s ∈ S) (t ∈ T), u = s * t}) = 𝕍 S ∪ 𝕍 T :=
+𝕍 (S * T) = 𝕍 S ∪ 𝕍 T :=
 begin
   -- We've done this before, right?
   sorry
