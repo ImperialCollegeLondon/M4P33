@@ -99,6 +99,10 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
     -- the zeros of U are exactly the union of the zeros of S and of T.
     -- Here's how to do it.
     use {u | ∃ (s ∈ S) (t ∈ T), u = s * t},
+    -- The goal in maths is now
+    -- ⋂ (s ∈ S) zeros(s) ∪ ⋂ (t ∈ T) zeros(t) = ⋂ (u ∈ ST) zeros(u).
+    -- Lean manages to make quite a mess of its display of this. 
+    
     -- To prove that the affine algebraic set cut out by this collection of polynomials
     -- is precisely the set V ∪ W, we check both inclusions.
     apply set.subset.antisymm,
