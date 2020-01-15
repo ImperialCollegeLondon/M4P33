@@ -119,6 +119,26 @@ begin
   cases hf,
 end
 
+/-- Over a non-zero commutative ring, 𝕍 (k[X₁,X₂,…,Xₙ]) = ∅ -/
+lemma univ {k : Type*} [nonzero_comm_ring k] {n : Type*} :
+  𝕍 (univ : set (mv_polynomial n k)) = ∅ :=
+begin
+  -- It suffices to show that for all x ∈ kⁿ, x isn't in 𝕍 (all polynomials)
+  rw eq_empty_iff_forall_not_mem,
+  -- so say x ∈ kⁿ
+  intro x,
+  -- we need to check that it's not true that for every polynomial f, f(x) = 0
+  rw mem_iff,
+  -- so let's assume that f(x) = 0 for every polynomial f, and get a contradiction
+  intro h,
+  -- let's consider the constant polynomial 1
+  replace h := h (C 1) (mem_univ _),
+  -- evaluating 1 at x gives the value 1
+  rw eval_C at h,
+  -- so 1 = 0 in k, which contradicts k being non-zero
+  exact zero_ne_one h.symm 
+end
+
 /-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
 theorem antimono (S T : set (mv_polynomial n k)) :
   S ⊆ T → 𝕍 T ⊆ 𝕍 S :=
@@ -184,7 +204,8 @@ begin
   }
 end
 
-/-- Infinite unions work just the same -/
+-- Infinite (or rather, arbitrary) unions work just the same
+-- We consider a collection Sᵢ of subsets indexed by i ∈ I.
 theorem Union {I : Type*} (S : I → set (mv_polynomial n k)) :
 𝕍 (⋃ i, S i) = ⋂ i, 𝕍 (S i) :=
 begin
@@ -230,13 +251,97 @@ begin
   }
 end
 
+-- temp end because I need to fix proof below
+end affine_algebraic_set.𝕍 #exit
+
 instance : has_mul (set (mv_polynomial n k)) := ⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
 
 theorem mul (S T : set (mv_polynomial n k)) :
 𝕍 (S * T) = 𝕍 S ∪ 𝕍 T :=
 begin
-  -- We've done this before, right?
-  sorry
+  -- to prove that the two sets are equal we will prove ⊆ and ⊇ 
+  apply set.subset.antisymm,
+  { -- This is the "harder" of the two inclusions;
+    -- we need to check that if x vanishes on every element of S*T, 
+    -- then x ∈ 𝕍 S or x ∈ 𝕍 T. So let x be in 𝕍 (S * T)
+    intros x hx,
+    -- We then know that for every f ∈ S * T, f(x) = 0
+    rw mem_iff at hx,
+    classical, -- We now proudly assume the law of the excluded middle.
+    -- If x ∈ 𝕍 S then the result is easy...
+    by_cases hx2 : x ∈ 𝕍 S,
+      -- because 𝕍 S ⊆ 𝕍 S ∪ 𝕍 T
+      exact subset_union_left _ _ hx2,
+    -- ...so we can assume assume x ∉ 𝕍 S,
+    -- and hence that there's s ∈ S such that s(x) ≠ 0
+    rw [hS, set.mem_Inter, not_forall] at hx2,
+    cases hx2 with s hs,
+    have hs2 : s ∈ S ∧ ¬eval x s = 0,
+      simpa using hs,
+    cases hs2 with hsS hns,
+    -- we now show x ∈ W
+    right,
+    rw set.mem_Inter,
+    -- Say t ∈ T
+    intro t,
+    -- We want to prove that t(x) = 0.
+    suffices : t ∈ T → eval x t = 0,
+      simpa,
+    intro ht,
+    -- Now by assumption, x vanishes on s * t. 
+    replace hx' := hx' (s * t) s hsS t ht rfl,
+    -- so s(x) * t(x) = 0
+    rw eval_mul at hx',
+    -- so either s(x) or t(x) = 0, but we chose s such that s(x) ≠ 0.
+    cases mul_eq_zero.1 hx' with hxs hxt,
+      -- So the case s(x) = 0 is a contradiction
+      contradiction,
+    -- and t(x) = 0 is what we wanted to prove
+    assumption
+  },
+  { -- Here's the easier of the two inclusions.
+    -- say x ∈ V ∪ W,
+    intros x hx,
+    -- it's either in V or W.
+    cases hx with hxV hxW,
+    { -- Say x ∈ V
+      -- We know that x vanishes at every element of S.
+      rw set.mem_Inter at hxV,
+      -- We want to prove x vanishes at every polynomial of the form s * t
+      -- with s ∈ S and t ∈ T.
+      rw set.mem_Inter,
+      -- so let's take an element u of the form s * t
+      rintro u,
+      -- Let's now notice that the goal has got completely out of hand, and
+      -- simplify it back to ∀ s ∈ S and ∀ t ∈ T, (s * t)(x) = 0.
+      suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
+      {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
+      rintro s hs t ht rfl,
+      -- we need to show st(x)=0.
+      -- Because x ∈ V, we have s(x)=0. 
+      have hx := set.mem_Inter.1 (hxV s) hs,
+      change s.eval x = 0 at hx,
+      -- It suffices to show s(x)*t(x)=0
+      rw eval_mul,
+      -- but s(x) = 0,
+      rw hx,
+      -- and now it's obvious
+      apply zero_mul,
+    },
+    { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument so I won't
+      -- comment it. Some sort of argument with the `wlog` tactic might be able to do this.
+      rw set.mem_Inter at hxW ⊢,
+      rintro u,
+        suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
+        {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
+      rintro s hs t ht rfl,
+      have hx := hxW t,
+      rw set.mem_Inter at hx,
+      replace hx : eval x t = 0 := hx ht,
+      rw eval_mul,
+      rw hx, simp,
+    }
+  }
 end
 
 end affine_algebraic_set.𝕍
