@@ -1,3 +1,5 @@
+-- THIS FILE IS DEPRECATED; I AM DOING V AND I BEFORE AFFINE ALG SETS NOW
+
 /-
 Copyright (c) 2020 Kevin Buzzard
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -68,62 +70,6 @@ variables {k : Type*} [comm_ring k]
 
 -- and let n be a natural number
 variable {n : ℕ}
-
--- In Lean 3, the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is
--- denoted `mv_polynomial (fin n) k`.
--- The set kⁿ is denoted `fin n → k` (which means maps from {0,1,2,...,(n-1)} to k).
-
-/-- 𝕍 : the function sending a subset of k[X₁,X₂,…Xₙ] to an
-  affine algebraic subset of kⁿ, define in Martin Orr's notes -/
-def 𝕍 : set (mv_polynomial (fin n) k) → affine_algebraic_set k n :=
-λ (S : set (mv_polynomial (fin n) k)),
-{ carrier := _,
-  is_algebraic' := ⟨by assumption, rfl⟩
-}
-
-namespace 𝕍
-
--- this is infrastructure -- ignore the proof.
-lemma carrier_def (S : set (mv_polynomial (fin n) k)) : (𝕍 S : set _) = {x | ∀ s ∈ S, eval x s = 0} :=
-begin
-  show (⋂ (f ∈ S), zeros f) = _,
-  ext x,
-  -- TODO(kmb): how come simp doesn't finish the job now even though set.mem_Inter is a simp lemma?
-  rw set.mem_Inter,
-  simp,
-end
-
--- This is infrastructure -- ignore the proof.
-lemma mem_iff (S : set (mv_polynomial (fin n) k)) (x : fin n → k) :
-  x ∈ ⇑(𝕍 S) ↔ ∀ s ∈ S, eval x s = 0 :=
-begin
-  rw carrier_def,
-  exact iff.rfl,
-end
-
-/-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
-theorem antimono (S T : set (mv_polynomial (fin n) k)) :
-  S ⊆ T → 𝕍 T ⊆ 𝕍 S :=
-begin
--- Say S ⊆ T and x ∈ 𝕍 T. 
-  intro hST,
-  intros x hx,
-  -- We want to prove x ∈ 𝕍 S.
-  -- We know that ∀ t ∈ T, t(x) = 0, and we want to prove that ∀ s ∈ S, s(x) = 0. 
-  rw mem_iff at hx ⊢,
-  -- So say s ∈ S.
-  intros s hs,
-  -- then s ∈ T so we're done
-  exact hx _ (hST hs),
-end
-
-theorem union (S T : set (mv_polynomial (fin n) k)) :
-  𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
-
-
--- TODO: Probably 𝕍 is some kind of morphism of lattices?
-
-end 𝕍
 
 /-- 𝕀 : the function sending a subset of kⁿ to
   an ideal of k[X₁,X₂,…Xₙ], defined in Martin Orr's notes. -/
