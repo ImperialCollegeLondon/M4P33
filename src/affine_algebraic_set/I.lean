@@ -125,7 +125,6 @@ begin
   },
 end
 
-kⁿ
 lemma 𝕀_antimono (V W : set (n → k)) :
   V ⊆ W → 𝕀 W ⊆ 𝕀 V :=
 begin
