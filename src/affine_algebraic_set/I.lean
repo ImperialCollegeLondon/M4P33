@@ -87,8 +87,15 @@ namespace affine_algebraic_set.𝕀
 open set
 
 /-- f ∈ 𝕀 X ↔ for all x ∈ X, f(x) = 0. This is true by definition. -/
-lemma mem_iff {X : set (n → k)} {f : mv_polynomial n k} :
+lemma mem_𝕀_iff {X : set (n → k)} {f : mv_polynomial n k} :
   f ∈ 𝕀 X ↔ ∀ x ∈ X, eval x f = 0 := iff.rfl
+
+/-- Over an infinite integral domain a polynomial f is zero iff it evaluates to zero everywhere-/
+lemma poly_zero_iff_polyfun_zero  {k : Type*} [integral_domain k] [infinite k] {f : mv_polynomial n k} :
+f=0 ↔ ∀ x:(n→k), (eval x f=0) :=
+begin
+  sorry
+end
 
 /-- 𝕀 ∅ = all of k[X₁,X₂,…,Xₙ] -/
 lemma empty : 𝕀 (∅ : set (n → k)) = univ :=
@@ -99,14 +106,14 @@ begin
   intro f,
   -- and we need to prove f ∈ 𝕀 ∅. 
   -- Equivalently, we need to prove that for all x ∈ ∅, f(x) = 0
-  rw mem_iff,
+  rw mem_𝕀_iff,
   -- so say x is in the empty set
   intros x hx,
   -- and now we have a contradiction, so we can prove anything
   cases hx
 end
 
-lemma univ {k : Type*} [nonzero_comm_ring k] {n : Type*} :
+lemma univ {k : Type*} [integral_domain k] [infinite k] {n : Type*} :
   𝕀 (univ : set (n → k)) = {0} :=
 begin
   -- we prove inclusions in both directions
@@ -117,18 +124,33 @@ begin
     intros f hf,
     -- and we need to prove it's zero
     rw mem_singleton_iff,
+    -- -> only poly thats zero everywhere is zero poly
+    rw mem_𝕀_iff at hf,
     sorry
-
   },
   { 
-     sorry
+    -- unpack set
+     rw singleton_subset_iff,
+     -- apply definition of 𝕀 
+     rw mem_𝕀_iff,
+     simp,
   },
 end
 
 lemma 𝕀_antimono (V W : set (n → k)) :
   V ⊆ W → 𝕀 W ⊆ 𝕀 V :=
 begin
-  sorry
+  -- Assume V ⊆ W and f a polynomial
+  intros H f,
+  -- Apply Definition of 𝕀 twice
+  rw [mem_𝕀_iff,mem_𝕀_iff],
+  -- More Assumptions
+  intro P,
+  intros x HX,
+  -- Use that f(x)=0 ∀ x∈W
+  apply P,
+  -- Use V ⊆ W
+  from H HX,
 end
 
 end affine_algebraic_set.𝕀
