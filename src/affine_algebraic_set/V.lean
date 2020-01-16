@@ -397,12 +397,14 @@ begin
     { -- This is the case x ∈ 𝕍 T and it's of course completely analogous.
       -- If I knew more about Lean's `WLOG` tactic I might not have to do
       -- this case. I'll just do it the computer science way (i.e., a proof
-      -- which is quick and incomprehensible)
+      -- which is quick to write but harder for a human to understand)
       rintro _ ⟨s, hs, t, ht, rfl⟩,
       rw [eval_mul, hxT t ht, mul_zero],
     }
   }
 end
+
+end affine_algebraic_set
 
 -- Pedantic exercise: we assumed a * b = 0 => a = 0 or b = 0. Give an
 -- example of a commutative ring with that property which is not an
@@ -413,4 +415,3 @@ end
 -- real names preferred, be nice)
 
 -- Prove a theorem. Write a function. xenaproject.wordpress.com
-end affine_algebraic_set
