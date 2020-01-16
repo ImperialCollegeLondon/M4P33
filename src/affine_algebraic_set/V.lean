@@ -4,6 +4,14 @@ Algebraic geometry M4P33, Jan-Mar 2020, formalised in Lean.
 Copyright (c) 2020 Kevin Buzzard
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Buzzard, and whoever else in the class wants to join in.
+
+Note: if you are viewing this file in a browser via the following
+link: 
+
+https://leanprover-community.github.io/lean-web-editor/#url=https%3A%2F%2Fraw.githubusercontent.com%2FImperialCollegeLondon%2FM4P33%2Fmaster%2Fsrc%2Faffine_algebraic_set%2FV.lean
+
+then you can click around on the code and see the state of Lean's "brain"
+at any point within any begin/end proof block.
 -/
 
 -- imports the theory of multivariable polynomials over rings
@@ -27,7 +35,7 @@ All the definitions work for k a commutative ring, but not all
 of the the theorems do. However, computer scientists want us to set
 up the theory in as much generality as possible, and I believe that
 mathematicians should learn to think more like computer scientists. 
-So k starts off being a commutative ring, and changes later.
+So k starts off being a commutative ring, and occasionally changes later.
 
 ## Lean 3 notation: important comments.
 
@@ -46,7 +54,7 @@ awkward notational issues.
 * subsets of a set X are denoted
   `set X`
 
-* The subset of X which is all of X is not called X! It's called
+* The subset of X which is all of X is not called X :-) It's called
   `univ`
 
 * To evaluate a polynomial f on a vector x, we write
@@ -94,8 +102,9 @@ variable {n : Type*}
      f(x)                  eval x f
 -/
 
-/-- 𝕍 : the function sending a subset of k[X₁,X₂,…Xₙ] to an
-  affine algebraic subset of kⁿ, defined in Martin Orr's notes -/
+/-- 𝕍 : the function sending a subset S of k[X₁,X₂,…Xₙ] to
+  the subset of kⁿ defined as the intersection of the zeros of all
+  the elements of S. For more details, see Martin Orr's notes -/
 def 𝕍 (S : set (mv_polynomial n k)) : set (n → k) :=
 {x : n → k | ∀ f ∈ S, eval x f = 0}
 
@@ -108,16 +117,20 @@ namespace affine_algebraic_set
 
 open set
 
+-- The following lemma has a trivial proof so don't worry about it.
 /-- x ∈ 𝕍 S ↔ for all f ∈ S, f(x) = 0. This is true by definition. -/
 lemma mem_𝕍_iff {S : set (mv_polynomial n k)} {x : n → k} :
   x ∈ 𝕍 S ↔ ∀ f ∈ S, eval x f = 0 := iff.rfl
+
+-- The rest of the proofs in this file are supposed to be comprehensible
+-- to mathematicians 
 
 /-- 𝕍(∅) = kⁿ -/
 lemma 𝕍_empty : 𝕍 (∅ : set (mv_polynomial n k)) = univ :=
 begin
   -- We need to show that for all x in kⁿ, x ∈ 𝕍 ∅
   rw eq_univ_iff_forall,
-  -- so say x ∈ kⁿ,
+  -- so say x ∈ kⁿ.
   intro x,
   -- By definition of 𝕍, we need to check that f(x) = 0 for all f in ∅
   rw mem_𝕍_iff,
