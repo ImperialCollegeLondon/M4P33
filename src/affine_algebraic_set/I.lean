@@ -117,12 +117,19 @@ begin
     intros f hf,
     -- and we need to prove it's zero
     rw mem_singleton_iff,
-    
+    sorry
 
   },
-  {
-
+  { 
+     sorry
   },
+end
+
+kⁿ
+lemma 𝕀_antimono (V W : set (n → k)) :
+  V ⊆ W → 𝕀 W ⊆ 𝕀 V :=
+begin
+  sorry
 end
 
 end affine_algebraic_set.𝕀

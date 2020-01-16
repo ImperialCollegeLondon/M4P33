@@ -16,6 +16,8 @@ at any point within any begin/end proof block.
 
 -- imports the theory of multivariable polynomials over rings
 import data.mv_polynomial
+-- imports the concept of the radical of an ideal
+import ring_theory.ideal_operations
 
 /-!
 # Lecture 2 : The 𝕍 construction
@@ -403,6 +405,83 @@ begin
     }
   }
 end
+
+/-- 𝕍(S) equals 𝕍(<S>), where <S> denotes the
+  ideal of k[X₁,…,Xₙ] spanned by S. -/
+theorem 𝕍_span (S : set (mv_polynomial n k)) : 𝕍 S = 𝕍 (ideal.span S) :=
+begin
+  -- Let's prove ⊆ and ⊇
+  apply set.subset.antisymm,
+  { -- This way is the tricky way
+    -- We need to prove 𝕍(S) ⊆ 𝕍(<S>), and we prove
+    -- this by induction on the ideal <S>.
+    -- Say x ∈ 𝕍(S)
+    intros x hx,
+    -- We need to prove that f(x) = 0 for all f in <S>
+    rw mem_𝕍_iff,
+    -- so say f ∈ <S>
+    intros f hf,
+    -- Apply the principle of induction for ideals.
+    apply submodule.span_induction hf,
+    -- We now have four goals!
+    {
+      -- first goal -- check that if g ∈ S then g(x) = 0
+      intros g hg,
+      -- this follows because x ∈ 𝕍(S)
+      exact hx _ hg,
+    },
+    { -- second goal -- check that if g = 0 then g(x) = 0
+      -- this is true by definition
+      refl
+    },
+    { -- third goal -- check that if g(x) = 0 and h(x) = 0
+      -- then (g+h)(x) = 0
+      intros g h hg hh,
+      -- This is easy because (g+h)(x)=g(x)+h(x)
+      rw eval_add,
+      -- and 0 + 0 = 0
+      rw [hg, hh, zero_add],
+    },
+    { -- finally, say g(x) = 0 and r ∈ k[X₁,…,Xₙ]
+      intros r g hg,
+      -- Need to check (r*g)(x) = 0
+      rw smul_eq_mul,
+      -- i.e. that r(x)*g(x)=0
+      rw eval_mul,
+      -- but g(x)=0
+      rw hg,
+      -- so this is obvious
+      exact mul_zero _,
+    }
+  },
+  { -- The fact that 𝕍(<S>) ⊆ 𝕍(S) follows from 𝕍_antimono and 
+    -- the fact that S ⊆ <S>
+    apply 𝕍_antimono,
+    exact ideal.subset_span,
+  }
+end
+
+/-- If I is an ideal of k[X₁,…,Xₙ] then 𝕍(I)=𝕍(√I), where √I is
+the radical of I -/
+theorem 𝕍_radical (I : ideal (mv_polynomial n k)) :
+  𝕍 (I : set (mv_polynomial n k)) = 𝕍 (I.radical) :=
+begin
+  apply set.subset.antisymm,
+  { -- this is the slightly trickier direction;
+    -- we want to prove 𝕍(I) ⊆ 𝕍(√I). So say x ∈ 𝕍(I).
+    intros x hx,
+    rw mem_𝕍_iff,
+    intro f,
+    intro hf,
+    cases hf with n hfn,
+
+
+  },
+  {
+
+  }
+end
+
 
 end affine_algebraic_set
 
