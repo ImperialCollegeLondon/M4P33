@@ -86,9 +86,11 @@ variable {n : Type*}
 /- recall:
 
      Maths                 Lean 3
+     ---------------------------------------
      k[X₁, X₂, ..., Xₙ]    mv_polynomial n k
      kⁿ                    n → k
      subsets of X          set X
+     the subset X of X     univ
      f(x)                  eval x f
 -/
 
@@ -389,10 +391,13 @@ begin
   }
 end
 
-#check integral_domain
-
 -- Pedantic exercise: we assumed a * b = 0 => a = 0 or b = 0. Give an
 -- example of a commutative ring with that property which is not an
 -- integral domain. Is the theorem still true for this ring?
 
+-- Questions or comments? You can often find me on the Lean chat
+-- at https://leanprover.zulipchat.com (login required,
+-- real names preferred, be nice)
+
+-- Prove a theorem. Write a function. xenaproject.wordpress.com
 end affine_algebraic_set
