@@ -1,4 +1,5 @@
--- So
+-- Some basic results about the relationship of 𝕍 and 𝕀 
+
 -- Imports results about 𝕍 and 𝕀 
 import .V
 import .I
