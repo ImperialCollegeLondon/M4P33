@@ -16,6 +16,8 @@ at any point within any begin/end proof block.
 
 -- imports the theory of multivariable polynomials over rings
 import data.mv_polynomial
+import for_mathlib.mv_polynomial
+
 -- imports the concept of the radical of an ideal
 import ring_theory.ideal_operations
 
@@ -463,8 +465,9 @@ end
 
 /-- If I is an ideal of k[X₁,…,Xₙ] then 𝕍(I)=𝕍(√I), where √I is
 the radical of I -/
-theorem 𝕍_radical (I : ideal (mv_polynomial n k)) :
-  𝕍 (I : set (mv_polynomial n k)) = 𝕍 (I.radical) :=
+theorem 𝕍_radical' {k : Type*} [integral_domain k] {n : Type*}
+  (I : ideal (mv_polynomial n k)) :
+  𝕍 (↑I : set (mv_polynomial n k)) = 𝕍 (↑(ideal.radical I) : set _) :=
 begin
   apply set.subset.antisymm,
   { -- this is the slightly trickier direction;
@@ -474,14 +477,16 @@ begin
     intro f,
     intro hf,
     cases hf with n hfn,
-
-
+    rw mem_𝕍_iff at hx,
+    replace hx := hx _ hfn,
+    rw eval_pow at hx,
+    exact pow_eq_zero hx,
   },
-  {
-
+  { -- this is the easy way
+    apply 𝕍_antimono,
+    apply ideal.le_radical,
   }
 end
-
 
 end affine_algebraic_set
 

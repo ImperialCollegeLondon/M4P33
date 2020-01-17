@@ -10,6 +10,11 @@ goes through abstractly.
 -- into well-defined collections, such as rings.
 import data.type.basic
 
+-- We want to prove that the images of 𝕍 and 𝕀 are in natural
+-- bijection with each other so we need the general theory
+-- of bijections
+import data.equiv.basic
+
 universes u v -- set theorists can set these both to be 0. Type 0 = sets.
 
 -- Let $R$ be a set.
@@ -125,16 +130,42 @@ begin
 end
 
 lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 (𝕍 (𝕀 V))) = 𝕀 V :=
-begin
-  apply set.subset.antisymm,
-  { intros x hx,
-    rw mem_𝕀_def at hx ⊢,
-    intros f hf,
-    apply hx,
-    apply sub_𝕀𝕍, -- ?? -- TODO -- what just happened? Should say sub_𝕍𝕀
-    assumption,
-  },
-  { apply sub_𝕍𝕀, -- ?? -- ??
-  }
-end
+𝕍𝕀𝕍_eq_𝕍 _ V -- rofl, it's the same proof but with a different P
+
+-- begin
+--   apply set.subset.antisymm,
+--   { intros x hx,
+--     rw mem_𝕀_def at hx ⊢,
+--     intros f hf,
+--     apply hx,
+--     apply sub_𝕀𝕍, -- ?? -- TODO -- what just happened? Should say sub_𝕍𝕀
+--     assumption,
+--   },
+--   { apply sub_𝕍𝕀, -- ?? -- ??
+--   }
+-- end
+
+open set
+
+/-- The images of 𝕍 and of 𝕀 are naturally in bijection -/
+lemma not_the_nullstellensatz : {V // ∃ J, 𝕍 J = V} ≃ {I // ∃ V, 𝕀 V = I} :=
+{ to_fun := λ V, ⟨𝕀 (V.1), V, rfl⟩,
+  inv_fun := λ I, ⟨𝕍 I.1, I, rfl⟩,
+  left_inv := begin
+    rintro ⟨V, J, hJ⟩,
+    rw subtype.ext,
+    change 𝕍 (𝕀 V) = V,
+    rw ←hJ,
+    refine 𝕍𝕀𝕍_eq_𝕍 _ _,
+  end,
+  right_inv := begin
+    rintro ⟨J, V, hV⟩,
+    rw subtype.ext,
+    change 𝕀 (𝕍 J) = J,
+    rw ←hV,
+    refine 𝕀𝕍𝕀_eq_𝕀 _ _,
+  end
+}
+
+
 
