@@ -1,11 +1,12 @@
 /-
-Copyright (c) 2020 Kevin Buzzard
+Copyright (c) 2020 Kevin Buzzard and 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Buzzard, and whoever else wants to join in.
 -/
 
 -- imports the theory of multivariable polynomials over rings
 import data.mv_polynomial
+import for_mathlib.mv_polynomial
 
 /-!
 # The 𝕀 construction
@@ -39,7 +40,8 @@ So k starts off being a commutative ring.
 
 ## References
 
-Martin Orr's lecture notes at https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
+Martin Orr's lecture notes at
+https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
 
 ## Tags
 
@@ -47,8 +49,8 @@ algebraic geometry, algebraic variety, 𝕍
 -/
 
 -- start of file 
--- We're dealing with multivariable polynomials so let's open the namespace to get
--- easy access to all the functions
+-- We're dealing with multivariable polynomials so let's open
+-- the namespace to get easy access to all the functions
 open mv_polynomial
 
 -- let k be a commutative ring
@@ -77,12 +79,12 @@ variable {n : Type*}
 
 -/
 
+namespace affine_algebraic_set
+
 /-- 𝕀 : the function sending a subset of kⁿ to
   a subset of k[X₁,X₂,…Xₙ], defined in Martin Orr's notes. -/
 def 𝕀 (X : set (n → k)) : set (mv_polynomial n k) :=
 {f | ∀ x ∈ X, eval x f = 0 }
-
-namespace affine_algebraic_set.𝕀
 
 open set
 
@@ -90,12 +92,7 @@ open set
 lemma mem_𝕀_iff {X : set (n → k)} {f : mv_polynomial n k} :
   f ∈ 𝕀 X ↔ ∀ x ∈ X, eval x f = 0 := iff.rfl
 
-/-- Over an infinite integral domain a polynomial f is zero iff it evaluates to zero everywhere-/
-lemma poly_zero_iff_polyfun_zero  {k : Type*} [integral_domain k] [infinite k] {f : mv_polynomial n k} :
-f=0 ↔ ∀ x:(n→k), (eval x f=0) :=
-begin
-  sorry
-end
+-- proofs which a mathematician might get something from start here
 
 /-- 𝕀 ∅ = all of k[X₁,X₂,…,Xₙ] -/
 lemma empty : 𝕀 (∅ : set (n → k)) = univ :=
@@ -124,9 +121,10 @@ begin
     intros f hf,
     -- and we need to prove it's zero
     rw mem_singleton_iff,
-    -- -> only poly thats zero everywhere is zero poly
+    -- -> only poly that's zero everywhere is zero poly
     rw mem_𝕀_iff at hf,
-    sorry
+    rw ←mv_polynomial.eval_eq_zero,
+    intro x, apply hf x, apply mem_univ,
   },
   { 
     -- unpack set
@@ -153,7 +151,7 @@ begin
   from H HX,
 end
 
-end affine_algebraic_set.𝕀
+end affine_algebraic_set
 #exit
 
 -- proof that image is an ideal; to be incorporated later on.

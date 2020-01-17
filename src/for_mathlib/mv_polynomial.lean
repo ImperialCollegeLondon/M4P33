@@ -20,5 +20,14 @@ begin
   rw hd,
 end
 
+/-- Over an infinite integral domain a polynomial f is zero iff it
+    evaluates to zero everywhere -/
+lemma mv_polynomial.eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
+  {n : Type*} {f : mv_polynomial n k} :
+(∀ x, eval x f = 0) ↔ f = 0 :=
+begin
+  sorry
+end
+
 end mv_polynomial
 

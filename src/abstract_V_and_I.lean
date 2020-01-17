@@ -15,6 +15,10 @@ import data.type.basic
 -- of bijections
 import data.equiv.basic
 
+-- the lattice structure on subsets (infinite unions etc)
+import data.set.lattice
+
+
 universes u v -- set theorists can set these both to be 0.
               -- (R : Type 0) means "let R be a set".
 
@@ -169,6 +173,32 @@ begin
     rintros ⟨hW, hX⟩, apply union_subset; assumption
   }
 end
+
+lemma 𝕍_Union (ι : Type*) (S : ι → set R) : 𝕍 (⋃ i, S i) = ⋂ i, 𝕍 (S i) :=
+begin
+  -- two sets are equal iff they have the same elements
+  ext x,
+  -- To be in the intersection of a bunch of sets just means
+  -- being in all of them
+  rw mem_Inter,
+  -- By the definition of 𝕍,
+  rw [mem_𝕍_iff],
+  show (∀ (f : R), (f ∈ ⋃ (i : ι), S i) → P f x) ↔ ∀ (i : ι), ∀ f ∈ S i, P f x,
+  -- I don't know how to do this without splitting (i.e. proving
+  -- both inclusions separately)
+  split,
+    intros,
+    apply a,
+    rw mem_Union,
+    use i,
+    assumption,
+  intros h f hf,
+  rw mem_Union at hf,
+  cases hf with i hi,
+  apply h i,
+  assumption,
+end
+
 
 lemma 𝕍𝕀_mono (U V : set A) (h : U ⊆ V) : 𝕍 (𝕀 U) ⊆ 𝕍 (𝕀 V) :=
 begin
