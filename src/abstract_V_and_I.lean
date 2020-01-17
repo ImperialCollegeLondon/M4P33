@@ -16,14 +16,19 @@ import data.type.basic
 import data.equiv.basic
 
 universes u v -- set theorists can set these both to be 0.
-              -- {R : Type 0} means "let R be a set".
+              -- (R : Type 0) means "let R be a set".
 
 -- Let $R$ be a set.
 -- For example $R$ could be the ring `k[X₁,…,Xₙ]`
-variables (R : Type u) {R}
+variables (R : Type u)
+-- When we're talking about 𝕍 and 𝕀, we will not mention R as part
+-- of the notation even though it is playing a role
+{R}
 
 -- Let $\mathbb{A}^n$ be another set.
-variables (A : Type v) {A}
+variables (A : Type v)
+-- Similarly we will not explicitly mention A most of the time
+{A}
 
 -- Let $P$ be a way of getting a true/false statement from a pair of
 -- elements $f ∈ R$ and $x ∈ \mathbb{A}^n$. For example $P(f,x)$ can be
@@ -32,29 +37,55 @@ variables (A : Type v) {A}
 variable (P : R → A → Prop)
 include P
 
--- Let $\mathbb{V}$, a function from subsets of $R$ to subsets of $\mathbb{A}^n$
--- and $\mathbb{I}$, a function from subsets of $\mathbb{A}^n$ to subsets of $R$
--- be defined by following your nose using $P$.
+-- Let $\mathbb{V}$, a function from subsets of $R$ to subsets of
+-- $\mathbb{A}^n$, and $\mathbb{I}$, a function from subsets of $\mathbb{A}^n$
+-- to subsets of $R$, be defined in the usual way.
+-- One can think of 𝕍(S) as being the largest U such that S × U ⊆ P,
+-- and 𝕀(U) as being the largest S such that S × U ⊆ P.
 
 -- The main theorem we will prove today is
 
 -- $\mathbf{theorem} For all $S\subseteq R$, $\V(\I(\V(S)))=\V(S)$, possibly
--- assuming some extra hypotheses, such as the fact that $k$ is algebraically
--- closed, or $S$ is an ideal.
+-- assuming some irrelevant extra hypotheses, such as the assumption
+-- that $k$ is algebraically closed, or $S$ is an ideal.
 
 def 𝕍_ (S : set R) : set A :=
 {x : A | ∀ f ∈ S, P f x}
 notation `𝕍`:max := 𝕍_ (by exact P)
 
 -- Type of 𝕍_ is Π {R : Type*} {A : Type*}, (R → A → Prop) → set R → set A
+-- i.e. (R → A → Prop) → (R → Prop) → (A → Prop)
 
 def 𝕀_ (X : set A) : set R :=
 {f : R | ∀ x ∈ X, P f x}
 notation `𝕀`:max := 𝕀_ (by exact P)
 
 -- restate definitions
-lemma mem_𝕍_def (S : set R) (x : A) : x ∈ 𝕍 S ↔ ∀ f ∈ S, P f x := iff.rfl
-lemma mem_𝕀_def (V : set A) (f : R) : f ∈ 𝕀 V ↔ ∀ x ∈ V, P f x := iff.rfl
+lemma mem_𝕍_iff (S : set R) (x : A) : x ∈ 𝕍 S ↔ ∀ f ∈ S, P f x := iff.rfl
+lemma mem_𝕀_iff (V : set A) (f : R) : f ∈ 𝕀 V ↔ ∀ x ∈ V, P f x := iff.rfl
+
+-- we're going to be doing set theory
+open set
+
+/-- 𝕍(∅) is everything. -/
+lemma 𝕍_empty : 𝕍 ∅ = univ :=
+begin
+  -- It suffices to show that every x of type A is in 𝕍 ∅
+  rw eq_univ_iff_forall,
+  -- so let x be in A
+  intro x,
+  -- we need to show that every f in the empty set satisfies (f,x) ∈ P
+  rw mem_𝕍_iff,
+  -- so say f is in the empty set
+  intros f hf,
+  -- but there are no elements in the empty set so we must be done
+  cases hf,
+end
+
+/-- 𝕀(∅) is everything -/
+lemma 𝕀_empty : 𝕀 ∅ = univ :=
+-- computer science proof
+eq_univ_iff_forall.2 $ λ x f, by rintro ⟨⟩
 
 -- 𝕍 is inclusion-reversing
 lemma 𝕍_antimono (S T : set R) (h : S ⊆ T) : 𝕍 T ⊆ 𝕍 S :=
@@ -63,7 +94,8 @@ begin
   intros x hx,
   -- and s in S,
   intros s hs,
-  -- We want to show P(s,x).
+  -- We want to show P(s,x) is true, or (s,x) ∈ P or s(x) = 0 or however
+  -- you think about it.
   -- Because x ∈ 𝕍(T), we know P(t,x) is true for all t ∈ T,
   -- so it suffices to prove s ∈ T
   apply hx,
@@ -84,6 +116,60 @@ lemma 𝕀_antimono (U V : set A) (h : U ⊆ V) : 𝕀 V ⊆ 𝕀 U :=
 -- Exercise: prove 𝕀_antimono the way a mathematician would, using only
 -- intros, apply and exact. Need help? Try the natural number game.
 
+lemma 𝕍_union (S T : set R) : 𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
+begin
+  -- we prove both inclusions
+  apply set.subset.antisymm,
+  { -- say x ∈ 𝕍(S ∪ T)
+    intros x hx,
+    -- we need to prove x ∈ 𝕍 S and x ∈ 𝕍 T
+    split,
+    -- both of these follow easily from 𝕍_antimono
+      -- exact 𝕍_antimono _ _ _ _ hx, -- TODO(kmb)
+        -- why is the wrong underscore marked in red??
+      exact 𝕍_antimono _ _ _ (subset_union_left _ _) hx,
+      exact 𝕍_antimono _ _ _ (subset_union_right _ _) hx,
+  },
+  { -- say x ∈ 𝕍(S) ∩ 𝕍(T)
+    rintros x ⟨hxS, hxT⟩,
+    -- we need to prove that for all f ∈ S ∪ T, f(x) = 0
+    intros f hf,
+    -- well f is either in S or T (or both)
+    cases hf,
+    { -- and if f ∈ S then we're done because x ∈ 𝕍(S)
+      exact hxS _ hf
+    },
+    { -- whereas if f ∈ T then we're done because x ∈ 𝕍(T)
+      exact hxT _ hf
+    }
+  }
+end 
+
+-- We prove this one in a slightly different way.
+lemma 𝕀_union (W X : set A) : 𝕀 (W ∪ X) = 𝕀 W ∩ 𝕀 X :=
+begin
+  -- By extensionality, two sets are equal iff they have the same elements
+  ext x,
+  -- To be in the intersection of two sets just means being in both of them
+  show _ ↔ x ∈ 𝕀 W ∧ x ∈ 𝕀 X,
+  -- By the definition of 𝕀,...
+  rw [mem_𝕀_iff, mem_𝕀_iff, mem_𝕀_iff],
+  --- we have to prove that 
+  -- W ∪ X ⊆ {f : f(x) = 0} iff W ⊆ {f : f(x) = 0} and X ⊆ {f : f(x) = 0}
+  show W ∪ X ⊆ _ ↔ W ⊆ _ ∧ X ⊆ _, -- the underscore just means "guess the set"
+  -- We prove the iff by proving both directions separately
+  split,
+  { -- Here we prove W ∪ X ⊆ Z → W ⊆ Z ∧ X ⊆ Z
+    intro hWX,
+    split,
+      refine set.subset.trans _ hWX, apply subset_union_left,
+    refine set.subset.trans _ hWX, apply subset_union_right,
+  },
+  { -- and here we prove W ⊆ Z ∧ X ⊆ Z → W ∪ X ⊆ Z
+    rintros ⟨hW, hX⟩, apply union_subset; assumption
+  }
+end
+
 lemma 𝕍𝕀_mono (U V : set A) (h : U ⊆ V) : 𝕍 (𝕀 U) ⊆ 𝕍 (𝕀 V) :=
 begin
   -- 𝕍 is anti-monotonic
@@ -98,8 +184,8 @@ end
 lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 (𝕍 S) ⊆ 𝕀 (𝕍 T) :=
 𝕀_antimono P _ _ (𝕍_antimono P _ _ h)
 
--- During the lecture today, it was pointed out that 𝕍(S) was the largest
--- U such that S × U was a subset of P, and 𝕀(U) was the largest S
+-- During the lecture today (17/01/20), it was pointed out that 𝕍(S) was the
+-- largest U such that S × U was a subset of P, and 𝕀(U) was the largest S
 -- such that S × U was a subset of P. This geometric way of thinking
 -- about things makes the next lemma trivial. Can you understand the Lean proof?
 
@@ -107,22 +193,11 @@ lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 (𝕍 S) ⊆ 𝕀 (𝕍 T
 lemma sub_𝕍𝕀 (U : set A) : U ⊆ 𝕍 (𝕀 U) :=
 begin
   intros x hx,
-  rw mem_𝕍_def,
+  rw mem_𝕍_iff,
   intros f hf,
-  rw mem_𝕀_def at hf,
+  rw mem_𝕀_iff at hf,
   apply hf,
   exact hx,
-end
-
-/-- S ⊆ 𝕀(𝕍(S)) -/
-lemma sub_𝕀𝕍 (S : set R) : S ⊆ 𝕀 (𝕍 S) :=
-begin
-  intros f hf,
-  rw mem_𝕀_def,
-  intros x hx,
-  rw mem_𝕍_def at hx,
-  apply hx,
-  assumption,
 end
 
 -- Because the proofs of sub_𝕍𝕀 and sub_𝕀𝕍 are basically
@@ -130,24 +205,29 @@ end
 -- can prove one of them using the other one! The trick is
 -- to make sure you allow quantification over all R and A
 -- so you can switch them around.
-lemma sub_𝕀𝕍' (S : set R) : S ⊆ 𝕀 (𝕍 S) := sub_𝕍𝕀 _ _
 
+/-- S ⊆ 𝕀(𝕍(S)) -/
+lemma sub_𝕀𝕍 (S : set R) : S ⊆ 𝕀 (𝕍 S) :=
+sub_𝕍𝕀 _ _
+
+-- the big theorem
 lemma 𝕍𝕀𝕍_eq_𝕍 (S : set R) : 𝕍 (𝕀 (𝕍 S)) = 𝕍 S :=
 begin
   apply set.subset.antisymm,
   { apply 𝕍_antimono,
     apply sub_𝕀𝕍
   },
-  { apply sub_𝕍𝕀, -- amazingly, sub_𝕀𝕍 also works, because Lean 
-                  -- realises that you want to swap R and A 
+  { apply sub_𝕍𝕀,
   }
 end
 
+-- the same theorem again (permute R and A)
 lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 (𝕍 (𝕀 V))) = 𝕀 V :=
 𝕍𝕀𝕍_eq_𝕍 _ V -- same proof but with a different P
 
 open set
 
+-- this final proof is written in a very computer-science way
 /-- The images of 𝕍 and of 𝕀 are naturally in bijection -/
 lemma not_the_nullstellensatz : {V // ∃ J, 𝕍 J = V} ≃ {I // ∃ V, 𝕀 V = I} :=
 { to_fun := λ V, ⟨𝕀 (V.1), V, rfl⟩,
@@ -167,3 +247,6 @@ lemma not_the_nullstellensatz : {V // ∃ J, 𝕍 J = V} ≃ {I // ∃ V, 𝕀 V
     refine 𝕀𝕍𝕀_eq_𝕀 _ _,
   end
 }
+
+-- The Nullstellensatz says that the image of 𝕀 is precisely the
+-- radical ideals. One inclusion is clear (which?)
