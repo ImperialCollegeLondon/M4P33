@@ -1,5 +1,3 @@
--- *TODO* remove me
-import tactic.linarith
 /-
 
 Thoughts about how much of the 𝕍 and 𝕀 theory
