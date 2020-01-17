@@ -26,7 +26,8 @@ lemma mv_polynomial.eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
   {n : Type*} {f : mv_polynomial n k} :
 (∀ x, eval x f = 0) ↔ f = 0 :=
 begin
-  sorry
+  split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
+  sorry 
 end
 
 end mv_polynomial
