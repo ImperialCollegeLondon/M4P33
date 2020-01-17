@@ -184,8 +184,7 @@ begin
   -- By the definition of 𝕍,
   rw [mem_𝕍_iff],
   show (∀ (f : R), (f ∈ ⋃ (i : ι), S i) → P f x) ↔ ∀ (i : ι), ∀ f ∈ S i, P f x,
-  -- I don't know how to do this without splitting (i.e. proving
-  -- both inclusions separately)
+  -- Now prove both inclusions separately
   split,
     intros,
     apply a,
@@ -197,6 +196,14 @@ begin
   cases hf with i hi,
   apply h i,
   assumption,
+end
+
+-- an AI can find a proof of this too:
+lemma 𝕀_Union (ι : Type*) (J : ι → set A) : 𝕀 (⋃ i, J i) = ⋂ i, 𝕀 (J i) :=
+begin 
+  ext,
+  simp [𝕀_],
+  tauto,
 end
 
 

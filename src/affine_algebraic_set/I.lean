@@ -151,11 +151,14 @@ begin
   from H HX,
 end
 
-end affine_algebraic_set
-#exit
+-- The image of 𝕀 is an ideal
 
--- proof that image is an ideal; to be incorporated later on.
-  zero := by simp, -- zero is obviously in.
+-- We do this by defining a function 𝕀' from subsets of kⁿ to ideals of R,
+-- and showing that 𝕀' agrees with 𝕀 when you take the ideal and consider
+-- it as a set 
+noncomputable def 𝕀' (X : set (n → k)) : ideal (mv_polynomial n k) :=
+{ carrier := 𝕀 X, -- underlying set is just 𝕀(X)
+  zero := by simp [𝕀], -- zero is obviously in.
   add := begin
     -- Goal: if f and g are in 𝕀(X), then so is f + g.
     -- say f and g are elements of 𝕀(X).
@@ -170,14 +173,13 @@ end affine_algebraic_set
     -- so (f + g)(x) = 0 + 0
     rw [hf _ hx, hg _ hx],
     -- which is 0
-    rw zero_add
-    -- refl omitted because Lean rw is clever
+    apply zero_add
   end,
   smul := begin
     -- goal: if f ∈ 𝕀(X) and c ∈ k[X₁,X₂,…,X_ₙ], then cf ∈ 𝕀(X).
     rintros c f hf,
     -- We know f(x) = 0 for all x ∈ X.
-    change ∀ (x : fin n → k), x ∈ X → eval x f = 0 at hf,
+    change ∀ (x : n → k), x ∈ X → eval x f = 0 at hf,
     -- Let's choose x ∈ X
     intros x hx,
     -- We need to prove cf(x)=0. 
@@ -190,3 +192,6 @@ end affine_algebraic_set
     -- refl omitted because Lean rw is clever
   end }
 
+  lemma 𝕀_eq_𝕀' (X : set (n → k)) : (𝕀' X : set (mv_polynomial n k)) = 𝕀 X := rfl
+
+end affine_algebraic_set
