@@ -34,25 +34,24 @@ include P
 -- assuming some extra hypotheses, such as the fact that $k$ is algebraically
 -- closed, or $S$ is an ideal.
 
-def 𝕍 (S : set R) : set A :=
+def 𝕍_ (S : set R) : set A :=
 {x : A | ∀ f ∈ S, P f x}
+notation `𝕍`:max := 𝕍_ (by exact P)
 
--- Type of 𝕍 is Π {R : Type*} {A : Type*}, (R → A → Prop) → set R → set A
+-- Type of 𝕍_ is Π {R : Type*} {A : Type*}, (R → A → Prop) → set R → set A
 
---#check @𝕍
---#check T𝕍 -- T𝕍 : Type (max (u_3+1) (u_4+1) u_3 u_4)
-
-def 𝕀 (X : set A) : set R :=
+def 𝕀_ (X : set A) : set R :=
 {f : R | ∀ x ∈ X, P f x}
+notation `𝕀`:max := 𝕀_ (by exact P)
 
 -- Note that 𝕍 and 𝕀 depend on P and so we'll have to mention P explicitly
 
 -- restate definitions
-lemma mem_𝕍_def (S : set R) (x : A) : x ∈ 𝕍 P S ↔ ∀ f ∈ S, P f x := iff.rfl
-lemma mem_𝕀_def (V : set A) (f : R) : f ∈ 𝕀 P V ↔ ∀ x ∈ V, P f x := iff.rfl
+lemma mem_𝕍_def (S : set R) (x : A) : x ∈ 𝕍 S ↔ ∀ f ∈ S, P f x := iff.rfl
+lemma mem_𝕀_def (V : set A) (f : R) : f ∈ 𝕀 V ↔ ∀ x ∈ V, P f x := iff.rfl
 
 -- 𝕍 is inclusion-reversing
-lemma 𝕍_antimono (S T : set R) (h : S ⊆ T) : 𝕍 P T ⊆ 𝕍 P S :=
+lemma 𝕍_antimono (S T : set R) (h : S ⊆ T) : 𝕍 T ⊆ 𝕍 S :=
 begin
   -- say x ∈ 𝕍(T)
   intros x hx,
@@ -69,17 +68,17 @@ begin
 end
 
 -- Here is how a computer scientist would write this proof:
-lemma 𝕍_antimono' (S T : set R) (h : S ⊆ T) : 𝕍 P T ⊆ 𝕍 P S :=
+lemma 𝕍_antimono' (S T : set R) (h : S ⊆ T) : 𝕍 T ⊆ 𝕍 S :=
 λ x hx s hs, hx _ (h hs)
 
 -- The advantage of writing it this way is that it also proves the converse!
-lemma 𝕀_antimono (U V : set A) (h : U ⊆ V) : 𝕀 P V ⊆ 𝕀 P U :=
+lemma 𝕀_antimono (U V : set A) (h : U ⊆ V) : 𝕀 V ⊆ 𝕀 U :=
 λ x hx s hs, hx _ (h hs)
 
 -- Exercise: prove 𝕀_antimono the way a mathematician would, using only
 -- intros, apply and exact. Need help? Try the natural number game.
 
-lemma 𝕍𝕀_mono (U V : set A) (h : U ⊆ V) : 𝕍 P (𝕀 P U) ⊆ 𝕍 P (𝕀 P V) :=
+lemma 𝕍𝕀_mono (U V : set A) (h : U ⊆ V) : 𝕍 (𝕀 U) ⊆ 𝕍 (𝕀 V) :=
 begin
   -- 𝕍 is anti-monotonic
   apply 𝕍_antimono,
@@ -90,11 +89,11 @@ begin
 end
 
 -- computer science proof of the other direction
-lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 P (𝕍 P S) ⊆ 𝕀 P (𝕍 P T) :=
+lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 (𝕍 S) ⊆ 𝕀 (𝕍 T) :=
 𝕀_antimono P _ _ (𝕍_antimono P _ _ h)
 
 /-- U ⊆ 𝕍(𝕀(U)) -/
-lemma sub_𝕍𝕀 (U : set A) : U ⊆ 𝕍 P (𝕀 P U) :=
+lemma sub_𝕍𝕀 (U : set A) : U ⊆ 𝕍 (𝕀 U) :=
 begin
   intros x hx,
   rw mem_𝕍_def,
@@ -105,31 +104,27 @@ begin
 end
 
 /-- S ⊆ 𝕀(𝕍(S)) -/
-lemma sub_𝕀𝕍 (S : set R) : S ⊆ 𝕀 P (𝕍 P S) :=
+lemma sub_𝕀𝕍 (S : set R) : S ⊆ 𝕀 (𝕍 S) :=
 begin
   intros f hf,
   rw mem_𝕀_def,
   intros x hx,
   rw mem_𝕍_def at hx,
   apply hx,
-  exact hf,
+  assumption,
 end
 
-lemma 𝕍𝕀𝕍_eq_𝕍 (S : set R) : 𝕍 P (𝕀 P (𝕍 P S)) = 𝕍 P S :=
+lemma 𝕍𝕀𝕍_eq_𝕍 (S : set R) : 𝕍 (𝕀 (𝕍 S)) = 𝕍 S :=
 begin
   apply set.subset.antisymm,
-  { intros x hx,
-    rw mem_𝕍_def at hx ⊢,
-    intros f hf,
-    apply hx,
-    apply sub_𝕀𝕍,
-    assumption,
+  { apply 𝕍_antimono,
+    apply sub_𝕀𝕍
   },
   { apply sub_𝕍𝕀,
   }
 end
 
-lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 P (𝕍 P (𝕀 P V))) = 𝕀 P V :=
+lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 (𝕍 (𝕀 V))) = 𝕀 V :=
 begin
   apply set.subset.antisymm,
   { intros x hx,
