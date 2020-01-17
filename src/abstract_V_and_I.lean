@@ -17,13 +17,14 @@ universes u v -- set theorists can set these both to be 0. Type 0 = sets.
 variable {R : Type u}
 
 -- Let $\mathbb{A}^n$ be another set.
-variable {W : Type v}
+variable {A : Type v}
 
 -- Let $P$ be a way of getting a true/false statement from a pair of
 -- elements $f ∈ R$ and $x ∈ \mathbb{A}^n$. For example $P(f,x)$ can be
 -- the statement that $f(x) = 0$. You can think of $P$ as being a subset
 -- of $R\times \mathbb{A}^n$ if you like.
-variable (P : R → W → Prop)
+variable (P : R → A → Prop)
+include P
 
 -- Let $\mathbb{V}$, a function from subsets of $R$ to subsets of $\mathbb{A}^n$
 -- and $\mathbb{I}$, a function from subsets of $\mathbb{A}^n$ to subsets of $R$
@@ -33,22 +34,22 @@ variable (P : R → W → Prop)
 -- assuming some extra hypotheses, such as the fact that $k$ is algebraically
 -- closed, or $S$ is an ideal.
 
-def 𝕍 (S : set R) : set W :=
-{x : W | ∀ f ∈ S, P f x}
+def 𝕍 (S : set R) : set A :=
+{x : A | ∀ f ∈ S, P f x}
 
---def T𝕍 := Π {R : Type*} {W : Type*}, (R → W → Prop) → set R → set W
+-- Type of 𝕍 is Π {R : Type*} {A : Type*}, (R → A → Prop) → set R → set A
 
 --#check @𝕍
 --#check T𝕍 -- T𝕍 : Type (max (u_3+1) (u_4+1) u_3 u_4)
 
-def 𝕀 (X : set W) : set R :=
+def 𝕀 (X : set A) : set R :=
 {f : R | ∀ x ∈ X, P f x}
 
 -- Note that 𝕍 and 𝕀 depend on P and so we'll have to mention P explicitly
 
 -- restate definitions
-lemma mem_𝕍_def (S : set R) (x : W) : x ∈ 𝕍 P S ↔ ∀ f ∈ S, P f x := iff.rfl
-lemma mem_𝕀_def (V : set W) (f : R) : f ∈ 𝕀 P V ↔ ∀ x ∈ V, P f x := iff.rfl
+lemma mem_𝕍_def (S : set R) (x : A) : x ∈ 𝕍 P S ↔ ∀ f ∈ S, P f x := iff.rfl
+lemma mem_𝕀_def (V : set A) (f : R) : f ∈ 𝕀 P V ↔ ∀ x ∈ V, P f x := iff.rfl
 
 -- 𝕍 is inclusion-reversing
 lemma 𝕍_antimono (S T : set R) (h : S ⊆ T) : 𝕍 P T ⊆ 𝕍 P S :=
@@ -72,13 +73,13 @@ lemma 𝕍_antimono' (S T : set R) (h : S ⊆ T) : 𝕍 P T ⊆ 𝕍 P S :=
 λ x hx s hs, hx _ (h hs)
 
 -- The advantage of writing it this way is that it also proves the converse!
-lemma 𝕀_antimono (U V : set W) (h : U ⊆ V) : 𝕀 P V ⊆ 𝕀 P U :=
+lemma 𝕀_antimono (U V : set A) (h : U ⊆ V) : 𝕀 P V ⊆ 𝕀 P U :=
 λ x hx s hs, hx _ (h hs)
 
 -- Exercise: prove 𝕀_antimono the way a mathematician would, using only
 -- intros, apply and exact. Need help? Try the natural number game.
 
-lemma 𝕍𝕀_mono (U V : set W) (h : U ⊆ V) : 𝕍 P (𝕀 P U) ⊆ 𝕍 P (𝕀 P V) :=
+lemma 𝕍𝕀_mono (U V : set A) (h : U ⊆ V) : 𝕍 P (𝕀 P U) ⊆ 𝕍 P (𝕀 P V) :=
 begin
   -- 𝕍 is anti-monotonic
   apply 𝕍_antimono,
@@ -93,7 +94,7 @@ lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 P (𝕍 P S) ⊆ 𝕀 P (
 𝕀_antimono P _ _ (𝕍_antimono P _ _ h)
 
 /-- U ⊆ 𝕍(𝕀(U)) -/
-lemma sub_𝕍𝕀 (U : set W) : U ⊆ 𝕍 P (𝕀 P U) :=
+lemma sub_𝕍𝕀 (U : set A) : U ⊆ 𝕍 P (𝕀 P U) :=
 begin
   intros x hx,
   rw mem_𝕍_def,
@@ -128,7 +129,7 @@ begin
   }
 end
 
-lemma 𝕀𝕍𝕀_eq_𝕀 (V : set W) : (𝕀 P (𝕍 P (𝕀 P V))) = 𝕀 P V :=
+lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 P (𝕍 P (𝕀 P V))) = 𝕀 P V :=
 begin
   apply set.subset.antisymm,
   { intros x hx,
