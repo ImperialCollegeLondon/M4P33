@@ -15,14 +15,15 @@ import data.type.basic
 -- of bijections
 import data.equiv.basic
 
-universes u v -- set theorists can set these both to be 0. Type 0 = sets.
+universes u v -- set theorists can set these both to be 0.
+              -- {R : Type 0} means "let R be a set".
 
 -- Let $R$ be a set.
 -- For example $R$ could be the ring `k[X₁,…,Xₙ]`
-variable {R : Type u}
+variables (R : Type u) {R}
 
 -- Let $\mathbb{A}^n$ be another set.
-variable {A : Type v}
+variables (A : Type v) {A}
 
 -- Let $P$ be a way of getting a true/false statement from a pair of
 -- elements $f ∈ R$ and $x ∈ \mathbb{A}^n$. For example $P(f,x)$ can be
@@ -33,7 +34,9 @@ include P
 
 -- Let $\mathbb{V}$, a function from subsets of $R$ to subsets of $\mathbb{A}^n$
 -- and $\mathbb{I}$, a function from subsets of $\mathbb{A}^n$ to subsets of $R$
--- be defined by following your nose using $P$. 
+-- be defined by following your nose using $P$.
+
+-- The main theorem we will prove today is
 
 -- $\mathbf{theorem} For all $S\subseteq R$, $\V(\I(\V(S)))=\V(S)$, possibly
 -- assuming some extra hypotheses, such as the fact that $k$ is algebraically
@@ -48,8 +51,6 @@ notation `𝕍`:max := 𝕍_ (by exact P)
 def 𝕀_ (X : set A) : set R :=
 {f : R | ∀ x ∈ X, P f x}
 notation `𝕀`:max := 𝕀_ (by exact P)
-
--- Note that 𝕍 and 𝕀 depend on P and so we'll have to mention P explicitly
 
 -- restate definitions
 lemma mem_𝕍_def (S : set R) (x : A) : x ∈ 𝕍 S ↔ ∀ f ∈ S, P f x := iff.rfl
@@ -97,6 +98,11 @@ end
 lemma 𝕀𝕍_mono (S T : set R) (h : S ⊆ T) : 𝕀 (𝕍 S) ⊆ 𝕀 (𝕍 T) :=
 𝕀_antimono P _ _ (𝕍_antimono P _ _ h)
 
+-- During the lecture today, it was pointed out that 𝕍(S) was the largest
+-- U such that S × U was a subset of P, and 𝕀(U) was the largest S
+-- such that S × U was a subset of P. This geometric way of thinking
+-- about things makes the next lemma trivial. Can you understand the Lean proof?
+
 /-- U ⊆ 𝕍(𝕀(U)) -/
 lemma sub_𝕍𝕀 (U : set A) : U ⊆ 𝕍 (𝕀 U) :=
 begin
@@ -119,31 +125,26 @@ begin
   assumption,
 end
 
+-- Because the proofs of sub_𝕍𝕀 and sub_𝕀𝕍 are basically
+-- the same, it might come as no surprise to see that you
+-- can prove one of them using the other one! The trick is
+-- to make sure you allow quantification over all R and A
+-- so you can switch them around.
+lemma sub_𝕀𝕍' (S : set R) : S ⊆ 𝕀 (𝕍 S) := sub_𝕍𝕀 _ _
+
 lemma 𝕍𝕀𝕍_eq_𝕍 (S : set R) : 𝕍 (𝕀 (𝕍 S)) = 𝕍 S :=
 begin
   apply set.subset.antisymm,
   { apply 𝕍_antimono,
     apply sub_𝕀𝕍
   },
-  { apply sub_𝕍𝕀,
+  { apply sub_𝕍𝕀, -- amazingly, sub_𝕀𝕍 also works, because Lean 
+                  -- realises that you want to swap R and A 
   }
 end
 
 lemma 𝕀𝕍𝕀_eq_𝕀 (V : set A) : (𝕀 (𝕍 (𝕀 V))) = 𝕀 V :=
-𝕍𝕀𝕍_eq_𝕍 _ V -- rofl, it's the same proof but with a different P
-
--- begin
---   apply set.subset.antisymm,
---   { intros x hx,
---     rw mem_𝕀_def at hx ⊢,
---     intros f hf,
---     apply hx,
---     apply sub_𝕀𝕍, -- ?? -- TODO -- what just happened? Should say sub_𝕍𝕀
---     assumption,
---   },
---   { apply sub_𝕍𝕀, -- ?? -- ??
---   }
--- end
+𝕍𝕀𝕍_eq_𝕍 _ V -- same proof but with a different P
 
 open set
 
@@ -166,6 +167,3 @@ lemma not_the_nullstellensatz : {V // ∃ J, 𝕍 J = V} ≃ {I // ∃ V, 𝕀 V
     refine 𝕀𝕍𝕀_eq_𝕀 _ _,
   end
 }
-
-
-
