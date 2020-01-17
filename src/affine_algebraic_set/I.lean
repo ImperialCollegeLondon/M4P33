@@ -192,6 +192,6 @@ noncomputable def 𝕀' (X : set (n → k)) : ideal (mv_polynomial n k) :=
     -- refl omitted because Lean rw is clever
   end }
 
-  lemma 𝕀_eq_𝕀' (X : set (n → k)) : (𝕀' X : set (mv_polynomial n k)) = 𝕀 X := rfl
+lemma 𝕀_eq_𝕀' (X : set (n → k)) : (𝕀' X : set (mv_polynomial n k)) = 𝕀 X := rfl
 
 end affine_algebraic_set
