@@ -78,7 +78,7 @@ open mv_polynomial
 /-- An affine algebraic subset of kⁿ is the common zeros of a set of polynomials -/
 structure affine_algebraic_set (k : Type*) [comm_ring k] (n : ℕ) := 
 -- a subset of the set of maps {0,1,2,...,n-1} → k (called "carrier")
-(carrier : set (fin n → k)) 
+(carrier : set (fin n → k))
 -- ...such that there's a set of polynomials such that the carrier is equal to the 
 -- intersection of the zeros of the polynomials in the set.
 (is_algebraic' : ∃ S : set (mv_polynomial (fin n) k), carrier = ⋂ f ∈ S, zeros f) -- ...such that

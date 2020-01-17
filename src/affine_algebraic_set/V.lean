@@ -20,6 +20,9 @@ import for_mathlib.mv_polynomial
 
 -- imports the concept of the radical of an ideal
 import ring_theory.ideal_operations
+import ring_theory.noetherian
+import ring_theory.polynomial
+
 
 /-!
 # Lecture 2 : The 𝕍 construction
@@ -417,7 +420,7 @@ begin
   { -- This way is the tricky way
     -- We need to prove 𝕍(S) ⊆ 𝕍(<S>), and we prove
     -- this by induction on the ideal <S>.
-    -- Say x ∈ 𝕍(S)
+    -- Say x  𝕍(S)
     intros x hx,
     -- We need to prove that f(x) = 0 for all f in <S>
     rw mem_𝕍_iff,
@@ -486,6 +489,29 @@ begin
     apply 𝕍_antimono,
     apply ideal.le_radical,
   }
+end
+
+open_locale classical
+theorem 𝕍_fin (S : set (mv_polynomial n k)) [fintype n] [is_noetherian_ring k] : ∃ (T : finset (mv_polynomial n k)), 𝕍 (S) = 𝕍 (↑T) := 
+begin
+  -- We want to utilize the fact that all ideals in a notherian ring are finitely generated
+  -- in lean this is true by definition. First we use a theorem in lean that mv_poynomial n k is notherian
+  haveI : is_noetherian_ring (mv_polynomial n k) := is_noetherian_ring_mv_polynomial_of_fintype,
+
+  -- We can now use the fact that the ring is notherian to show that S is finitely generated
+  have fg_s : (submodule.fg : ideal (mv_polynomial n k) -> Prop) (ideal.span S),
+  {
+    apply (is_noetherian.noetherian (ideal.span S)),
+  },
+  -- unpack the definition of finitely generated S
+  cases fg_s with T span_eq,
+  -- T will satisfy the required property so we "use T" and now our goal will be to
+  -- show that T indeed satisfies the property
+  use T,
+  -- We now use the fact that V(S) = V(Span S) and the fact that the span of S and T are the same
+  rw [𝕍_span S, 𝕍_span ↑T, ←span_eq],
+  -- The goal is now true by definition, so we use refl
+  refl,
 end
 
 end affine_algebraic_set
