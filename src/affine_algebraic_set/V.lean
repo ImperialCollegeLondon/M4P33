@@ -545,7 +545,7 @@ def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → 
     use S*T,
     -- Use multiplicative property of 𝕍
     rw [𝕍_mul],
-    -- We finish the proof by using De Moivre's TODO: explain convert?
+    -- TODO: explain convert
     convert (compl_union _ _).symm,
   end,
   -- Finally we wish to show that opens is preserved by arbitary unions
@@ -557,13 +557,15 @@ def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → 
   let H := {S : set (mv_polynomial n k) | - 𝕍 (S) ∈ opens},
   -- We now want to show that union over H satisfies the goal
   use ⋃₀ H,
+  -- converting from sUnion to Union so that we can use the lemma 𝕍_union
   rw @sUnion_eq_Union (mv_polynomial n k) H,
   rw 𝕍_Union,
-  
+  -- putting goal in canonical form
   show ⋃₀ opens = - (⋂ (i : H), 𝕍 (i.val)),
   -- Now that we are using canonical form, rewrites will work again.
   rw compl_Inter,
   rw sUnion_eq_Union,
+  -- We prove the two sides are equal by showing the double inclusion
   apply eq_of_subset_of_subset,
     {
       apply Union_subset_Union2,
@@ -579,7 +581,7 @@ def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → 
   intro S,
   use - 𝕍 S, exact S.2,
   show -𝕍 (S.1) ⊆ -𝕍 (S.1),
-  apply subset.refl,
+  refine set.subset.refl _,
   end
 }
 
