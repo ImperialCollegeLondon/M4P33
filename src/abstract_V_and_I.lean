@@ -1,8 +1,15 @@
 /-
+Algebraic geometry M4P33, Jan-Mar 2020, formalised in Lean.
+
+Copyright (c) 2020 Kevin Buzzard
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kevin Buzzard, Alexander Uhlmann, and whoever else in the class
+wants to join in.
 
 Thoughts about how much of the 𝕍 and 𝕀 theory
 goes through abstractly.
 
+Note: I think that this file is now pretty much done.
 -/
 
 -- This is set theory. But we want to do some type theory as well.
@@ -119,6 +126,22 @@ lemma 𝕀_antimono (U V : set A) (h : U ⊆ V) : 𝕀 V ⊆ 𝕀 U :=
 
 -- Exercise: prove 𝕀_antimono the way a mathematician would, using only
 -- intros, apply and exact. Need help? Try the natural number game.
+
+-- Thanks to Alexander Uhlmann for spotting definition 3.1 here:
+-- https://ncatlab.org/nlab/show/Galois+connection#GaloisTheory
+lemma is_galois_connection {Y : set A} {J : set R} :
+Y ⊆ 𝕍 J ↔ 𝕀 Y ⊇ J :=
+begin
+  split,
+  { intros hY f hf,
+    rw mem_𝕀_iff,
+    intros x hx,
+    exact hY hx f hf,
+  },
+  { intros hJ x hx f hf,
+    exact hJ hf x hx,
+  }
+end
 
 lemma 𝕍_union (S T : set R) : 𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
 begin

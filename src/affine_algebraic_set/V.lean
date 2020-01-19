@@ -412,6 +412,10 @@ begin
   }
 end
 
+-- Pedantic exercise: we assumed a * b = 0 => a = 0 or b = 0. Give an
+-- example of a commutative ring with that property which is not an
+-- integral domain. Is the theorem still true for this ring?
+
 /-- 𝕍(S) equals 𝕍(<S>), where <S> denotes the
   ideal of k[X₁,…,Xₙ] spanned by S. -/
 theorem 𝕍_span (S : set (mv_polynomial n k)) : 𝕍 S = 𝕍 (ideal.span S) :=
@@ -493,31 +497,40 @@ begin
 end
 
 open_locale classical
-theorem 𝕍_fin (S : set (mv_polynomial n k)) [fintype n] [is_noetherian_ring k] : ∃ (T : finset (mv_polynomial n k)), 𝕍 (S) = 𝕍 (↑T) := 
-begin
-  -- We want to utilize the fact that all ideals in a notherian ring are finitely generated
-  -- in lean this is true by definition. First we use a theorem in lean that mv_poynomial n k is notherian
-  haveI : is_noetherian_ring (mv_polynomial n k) := is_noetherian_ring_mv_polynomial_of_fintype,
 
-  -- We can now use the fact that the ring is notherian to show that S is finitely generated
+-- 
+theorem 𝕍_fin (S : set (mv_polynomial n k)) [fintype n] [is_noetherian_ring k] :
+  ∃ (T : finset (mv_polynomial n k)), 𝕍 (S) = 𝕍 (↑T) := 
+begin
+  -- We want to utilize the fact that all ideals in a notherian ring are
+  -- finitely generated. In lean this is true by definition. First we use a
+  -- theorem in lean that mv_poynomial n k is notherian
+  haveI : is_noetherian_ring (mv_polynomial n k) :=
+    is_noetherian_ring_mv_polynomial_of_fintype,
+
+  -- We can now use the fact that the ring is notherian to show that S is
+  -- finitely generated
   have fg_s : (submodule.fg : ideal (mv_polynomial n k) -> Prop) (ideal.span S),
   {
     apply (is_noetherian.noetherian (ideal.span S)),
   },
   -- unpack the definition of finitely generated S
   cases fg_s with T span_eq,
-  -- T will satisfy the required property so we "use T" and now our goal will be to
-  -- show that T indeed satisfies the property
+  -- T will satisfy the required property so we "use T" and now our goal will
+  -- be to show that T indeed satisfies the property
   use T,
-  -- We now use the fact that V(S) = V(Span S) and the fact that the span of S and T are the same
+  -- We now use the fact that V(S) = V(Span S) and the fact that the span of
+  -- S and T are the same
   rw [𝕍_span S, 𝕍_span ↑T, ←span_eq],
   -- The goal is now true by definition, so we use refl
   refl,
 end
 
-def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → k) := 
-{ -- First we need to define what an open is, in lean we need to give a function from set (n → k) → Prop
-  -- i.e. a function which takes a set in k^n and determines if this is open or not.
+def Zariski_topology {k : Type*} [integral_domain k] :
+  topological_space (n → k) := 
+{ -- First we need to define what an open is, in lean we need to give a function
+  -- from set (n → k) → Prop i.e. a function which takes a set in k^n and
+  -- determines if this is open or not.
   is_open := λ U, ∃ (S : set (mv_polynomial n k)), U = -𝕍 (S),
   -- Secondly we show that univ, the whole set, is open.
   is_open_univ :=
@@ -526,17 +539,21 @@ def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → 
     use (univ : set (mv_polynomial n k)),
     -- Use fact that V(univ) = ∅
     rw 𝕍_univ,
-    -- Putting goal into canonical form, i.e. use the frontend notations such as - instead of compl
-    -- this is important because rewrites wont recognize definitionally equivalent statements as the same
+    -- Putting goal into canonical form, i.e. use the frontend notations such
+    -- as - instead of compl
+    -- this is important because rewrites wont recognize definitionally
+    -- equivalent statements as the same
     show univ = - ∅,
-    -- Now that we are using canonical form, rewrites will work again. So we finish up by using fact
+    -- Now that we are using canonical form, rewrites will work again.
+    -- So we finish up by using fact
     -- that -(∅) = univ
     rw compl_empty, 
   end,
   -- Now we show that being open is preserved by intersections.
   is_open_inter :=
   begin
-    -- Let U, V be opens and let U_set be the fact that there is some S st U = - 𝕍 (S). Similarly for V_set.
+    -- Let U, V be opens and let U_set be the fact that there is some S such
+    -- that U = - 𝕍 (S). Similarly for V_set.
     intros U V U_set V_set,
     -- unpack U_set and V_set to access the underlying sets S and T
     cases U_set with S U_comp,
@@ -587,12 +604,7 @@ def Zariski_topology {k : Type*} [integral_domain k] : topological_space (n → 
 
 end affine_algebraic_set
 
-
--- Pedantic exercise: we assumed a * b = 0 => a = 0 or b = 0. Give an
--- example of a commutative ring with that property which is not an
--- integral domain. Is the theorem still true for this ring?
-
--- Questions or comments? You can often find me on the Lean chat
+-- Questions or comments? You can often find Kevin on the Lean chat
 -- at https://leanprover.zulipchat.com (login required,
 -- real names preferred, be nice)
 
