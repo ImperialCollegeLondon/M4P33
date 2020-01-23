@@ -320,22 +320,37 @@ lemma mem_vars_iff_mem_degrees {R : Type*} [comm_semiring R] {σ : Type*}
   {p : mv_polynomial σ R} {n : σ} : n ∈ vars p ↔ n ∈ degrees p := 
 multiset.mem_to_finset
 
+-- I will need to learn the interface for finsupp to do this one
+-- Remark: only need φ 0 = 0, not semiring hom.
 lemma vars_map_sub {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S]
   {σ : Type*} {φ : R → S} [is_semiring_hom φ] {p : mv_polynomial σ R} :
 vars (map φ p) ⊆ vars p := sorry
 
-example {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S] {σ : Type*}
+-- I think I'll also need to learn about finsupp to do this one.
+lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
+  (f g : σ → R) (p : mv_polynomial σ R)
+  (h : ∀ i ∈ vars p, f i = g i) :
+eval f p = eval g p := sorry
+
+lemma eval₂_eq_of_eq_on_vars {R : Type*} [comm_semiring R]
+  {S : Type*} [comm_semiring S] {σ : Type*}
   (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
   [is_semiring_hom φ] -- do we need this??
   (h : ∀ i ∈ vars p, f i = g i) :
 eval₂ φ f p = eval₂ φ g p :=
 begin
   rw [eval₂_eq_eval_map, eval₂_eq_eval_map],
-  have h1 : ∀ (i : σ), i ∈ vars (map φ p) → f i = g i,
-    intros i hi, exact h i (vars_map_sub hi),
-  sorry
+  apply eval_eq_of_eq_on_vars,
+  intros i hi, 
+  exact h _ (vars_map_sub hi),
 end
 
+lemma mem_rename_range {R : Type*} [comm_semiring R]
+  {σ τ : Type*} {g : σ → τ} (p : mv_polynomial τ R)
+  (h : (vars p).to_set ⊆ set.range g) :
+  ∃ q : mv_polynomial σ R, rename g q = p := sorry
+
+#check rename
 /-- Over an infinite integral domain a polynomial f is zero iff it
     evaluates to zero everywhere -/
 lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
@@ -343,6 +358,7 @@ lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
 (∀ x, eval x f = 0) ↔ f = 0 :=
 begin
   split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
+  intro hev,
 --  let X := fintype.of_finset (vars f) (λ x, iff.rfl),
   let R0 := mv_polynomial (vars f).to_set k,
   sorry
