@@ -267,8 +267,8 @@ begin
   }
 end
 
-/-- Over an infinite integral domain a polynomial f is zero if it
-    evaluates to zero everywhere -/
+/-- Over an infinite integral domain a polynomial f in finitely many
+    variables is zero if it evaluates to zero everywhere -/
 lemma fin_eval_eq_zero
   {k : Type*} [int : integral_domain k] [inf : infinite k]
   {n : Type*} [fin : fintype n] :
