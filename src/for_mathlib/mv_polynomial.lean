@@ -1,13 +1,13 @@
 import data.mv_polynomial
 import data.polynomial
 
-example : true := trivial -- workaround for the "open_locale at top of file"
-  -- issue
+-- workaround for the "open_locale at top of file" issue in Lean 3
+example : ℕ := 37
 
 open_locale classical
 
-lemma sum.rec_comp_left (X : Type*) (Y : Type*) (β : Type*) (γ : Type*) (i : β → X)
-  (j : γ → X) (f : X → Y) (x : β ⊕ γ) :
+lemma sum.rec_comp_left (X : Type*) (Y : Type*) (β : Type*) (γ : Type*)
+  (i : β → X) (j : γ → X) (f : X → Y) (x : β ⊕ γ) :
   f (sum.rec i j x) = sum.rec (f ∘ i) (f ∘ j) x := by cases x; refl
 
 namespace mv_polynomial
@@ -16,7 +16,8 @@ namespace mv_polynomial
 theorem eval_one {X : Type*} {R : Type*} [comm_semiring R]
   (x : X → R) : eval x 1 = 1 := eval_C _
   
--- this must be done somewhere else because it's in polynomial namespace
+-- this must be done somewhere else because the analogue is
+-- in the polynomial namespace
 theorem eval_pow {X : Type*} {R : Type*} [comm_semiring R]
   (f : mv_polynomial X R) (m : ℕ) (x : X → R) :
 eval x (f ^ m) = (eval x f)^m :=
@@ -72,7 +73,7 @@ namespace mv_polynomial
 
 @[simp] lemma eval_rename
   {k : Type*} [comm_semiring k]
-  {m : Type*} {n : Type*} (e : m ≃ n) (f : mv_polynomial m k) (x) :
+  {m : Type*} {n : Type*} (e : m → n) (f : mv_polynomial m k) (x) :
   eval x (rename e f) = eval (x ∘ e) f :=
 by apply f.induction_on; { intros, simp * }
 
@@ -100,7 +101,7 @@ def equiv.option {X : Type u} {Y : Type v} (e : X ≃ Y) : option X ≃ option Y
   left_inv := λ x, by { cases x, refl, simp },
   right_inv :=  λ x, by { cases x, refl, simp } }
 
-/-- n ↦ none-/
+/-- n ↦ none -/
 def fin_succ_equiv_option' (n : ℕ) : fin (n+1) ≃ option (fin n) :=
 { to_fun := λ x, if h : x.1 < n then some ⟨_, h⟩ else none,
   inv_fun := λ x, option.rec_on x ⟨n, nat.lt_succ_self _⟩ $
@@ -166,9 +167,57 @@ begin
     refine equiv.ulift.option.symm }
 end
 
-#check mv_polynomial.option_equiv_right
+/- 
+mv_polynomial.option_equiv_right :
+-- mv_polynomial (option β) α ≃+* mv_polynomial β (polynomial α)
+
+it's built from
+
+. mv_polynomial.ring_equiv_of_equiv
+. mv_polynomial.sum_ring_equiv
+. mv_polynomial.ring_equiv_congr
+
+glued together with 
+
+. ring_equiv.trans
+-/
 
 namespace mv_polynomial
+
+attribute [simp] sum_to_iter_Xr sum_to_iter_Xl sum_to_iter_C
+
+@[simp] theorem option_equiv_right_X_none {α β} [comm_semiring α] :
+  option_equiv_right α β (X none) = C polynomial.X :=
+show map (eval₂ polynomial.C (λu:punit, polynomial.X))
+  (sum_to_iter α β unit
+    (rename (equiv.option_equiv_sum_punit._match_1 β)
+      (X none))) = C polynomial.X,
+by simp
+
+@[simp] theorem option_equiv_right_X_some {α β} [comm_semiring α] (b : β) :
+  option_equiv_right α β (X (some b)) = X b :=
+show map (eval₂ polynomial.C (λu:punit, polynomial.X))
+  (sum_to_iter α β unit
+    (rename (equiv.option_equiv_sum_punit._match_1 β)
+      (X (some b)))) = X b,
+by simp
+
+@[simp] theorem option_equiv_right_C {α β} [comm_semiring α] (a : α) :
+  option_equiv_right α β (C a) = C (polynomial.C a) :=
+show map (eval₂ polynomial.C (λu:punit, polynomial.X))
+  (sum_to_iter α β unit
+    (rename (equiv.option_equiv_sum_punit._match_1 β)
+      (C a))) = C (polynomial.C a),
+by simp
+
+/-
+Mario Carneiro: I also brute forced my way through several other definitions
+here, that should have definitional lemmas: ring_equiv_of_equiv,
+option_equiv_sum_punit (the definition should not be simp), sum_comm (ditto),
+sum_ring_equiv, punit_ring_equiv
+
+Mario Carneiro: Ideally this proof should be dunfold option_equiv_right; simp
+-/
 
 theorem eval₂_eval₂ (R : Type*) [comm_semiring R] (β : Type*) (γ : Type*)
 (S : Type*) [comm_semiring S] (f : R → S) [is_semiring_hom f]
@@ -187,7 +236,7 @@ begin
   rw eval₂_eval₂,
   rw ←eval₂_eq_eval_map,
   apply hom_eq_hom, apply_instance, apply_instance,
-  { intro b, simp,
+  { intro b,
     suffices : (C (eval₂ f j b) : mv_polynomial β S) =
       eval₂ (C ∘ f) (λ n, sum.rec X (C ∘ j) n) (eval₂ C (X ∘ sum.inr) b),
     simpa using this,
@@ -244,116 +293,46 @@ begin
       let xo : option n → k :=
         λ j, option.rec xoo (λ i, polynomial.eval xoo (x i)) j,
         convert hf xo,
+        rw hφ,
         apply hom_eq_hom _ _ _ _ _ _ f,
-        sorry, sorry, sorry,
---          apply_instance, apply_instance, apply_instance, 
-        { sorry},
-        -- { intro a,
-        --   rw eval_C,
-        --   unfold_coes,
-        --   suffices : ((φ.to_fun (C a : mv_polynomial (option n) k)) : mv_polynomial n (polynomial k)) =
-        --     (C (polynomial.C a : polynomial k) : mv_polynomial n (polynomial k)),
-        --     rw [this,eval_C, polynomial.eval_C],
-        --   rw hφ,
-        --   show (ring_equiv.trans (sum_ring_equiv k n unit) (ring_equiv_congr (mv_polynomial unit k) (punit_ring_equiv k))).to_fun
-        --     (rename (equiv.option_equiv_sum_punit._match_1 n) (C a)) =
-        --     C (polynomial.C a),
-        --   rw rename_C,
-        --   show (mul_equiv.to_equiv
-        --     (ring_equiv.to_mul_equiv
-        --       (ring_equiv_congr (mv_polynomial unit k) (punit_ring_equiv k)))).to_fun
-        --     ((sum_to_iter k n unit) (C a)) =
-        --     C (polynomial.C a),
-        --   rw sum_to_iter_C,
-        --   unfold ring_equiv_congr,
-        --   show map ⇑(punit_ring_equiv k) _ = _,
-        --   rw map_C,
-        --   congr,
-        --   dunfold punit_ring_equiv,
-        --   unfold_coes, dsimp,
-        --   simp},
-        { intro x,
-          cases x with x hx,
-          { rw eval_X,
-            show _ = xoo,
-            rw hφ, 
-            dunfold option_equiv_right,
-            unfold_coes,
-            rw ring_equiv.trans, dsimp,
-            rw mul_equiv.trans, dsimp,
-            rw equiv.trans, dsimp,
-            dunfold ring_equiv_of_equiv,
-            dsimp,
-            simp,
-            show polynomial.eval xoo
-              (eval x
-              ((mul_equiv.to_equiv
-              (ring_equiv.to_mul_equiv
-              (ring_equiv.trans (sum_ring_equiv k n unit)
-              (ring_equiv_congr (mv_polynomial unit k) (punit_ring_equiv k))))).to_fun
-              ((rename (equiv.option_equiv_sum_punit._match_1 n))
-              (X none)))) =
-              xoo,
-            rw ring_equiv.trans, 
-            show polynomial.eval xoo
-              (eval x
-              (((mul_equiv.trans (ring_equiv.to_mul_equiv (sum_ring_equiv k n unit))
-              (ring_equiv.to_mul_equiv
-              (ring_equiv_congr (mv_polynomial unit k) (punit_ring_equiv k)))).to_fun)
-              (rename (equiv.option_equiv_sum_punit._match_1 n) (X none)))) =
-              xoo,
-            rw rename_X,
-            rw mul_equiv.trans, dsimp,
-            rw equiv.trans, dsimp,
-            dunfold ring_equiv_congr,
-            show polynomial.eval xoo
-              (eval x
-              ((map ⇑(punit_ring_equiv k))
-              ((mul_equiv.to_equiv (ring_equiv.to_mul_equiv (sum_ring_equiv k n unit))).to_fun
-              (X (sum.inr punit.star))))) = xoo,
-            dunfold sum_ring_equiv,
-            show polynomial.eval xoo
-              (eval x
-              (map ⇑(punit_ring_equiv k)
-              ((mul_equiv.to_equiv
-              (ring_equiv.to_mul_equiv
-              (mv_polynomial_equiv_mv_polynomial k (n ⊕ unit) n (mv_polynomial unit k) (sum_to_iter k n unit) _
-              (iter_to_sum k n unit)
-                      _
-                      _
-                      _
-                      _
-                      _))).to_fun
-              (X (sum.inr punit.star))))) = xoo,
-            dunfold mv_polynomial_equiv_mv_polynomial,
-            show polynomial.eval xoo
-              (eval x
-              (map ⇑(punit_ring_equiv k)
-              ((sum_to_iter k n unit)
-              (X (sum.inr punit.star))))) = xoo,
-            rw sum_to_iter_Xr,
-            simp,
-            unfold_coes,
-            dunfold punit_ring_equiv,
-            dsimp,
-            rw eval₂_X,
-            rw polynomial.eval_X},
-          { sorry}
+          apply_instance, apply_instance, apply_instance, 
+        { intro a,
+          rw eval_C,
+          simp},
+        { intro xn,
+          cases xn with xn hxn,
+          { simp },
+          { simp },
         }
       },
-    { resetI, sorry } },
+    { resetI,
+      apply infinite.of_injective polynomial.C,
+      swap, assumption,
+      intros x y h, exact polynomial.C_inj.1 h, 
+    } },
   { intros m n _ _ e H k int inf f,
     apply mv_polynomial.equiv_eval_eq_zero e,
     apply @H }
 end
+.
 
-/-- Over an infinite integral domain a polynomial f is zero iff it
-    evaluates to zero everywhere -/
-lemma eval_eq_zero_iff
-  {k : Type*} [integral_domain k] [infinite k]
-  {n : Type*} {f : mv_polynomial n k} :
-  (∀ x, eval x f = 0) ↔ f = 0 :=
+lemma mem_vars_iff_mem_degrees {R : Type*} [comm_semiring R] {σ : Type*}
+  {p : mv_polynomial σ R} {n : σ} : n ∈ vars p ↔ n ∈ degrees p := 
+multiset.mem_to_finset
+
+lemma vars_map_sub {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S]
+  {σ : Type*} {φ : R → S} [is_semiring_hom φ] {p : mv_polynomial σ R} :
+vars (map φ p) ⊆ vars p := sorry
+
+example {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S] {σ : Type*}
+  (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
+  [is_semiring_hom φ] -- do we need this??
+  (h : ∀ i ∈ vars p, f i = g i) :
+eval₂ φ f p = eval₂ φ g p :=
 begin
+  rw [eval₂_eq_eval_map, eval₂_eq_eval_map],
+  have h1 : ∀ (i : σ), i ∈ vars (map φ p) → f i = g i,
+    intros i hi, exact h i (vars_map_sub hi),
   sorry
 end
 
@@ -364,7 +343,9 @@ lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
 (∀ x, eval x f = 0) ↔ f = 0 :=
 begin
   split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
-  sorry 
+--  let X := fintype.of_finset (vars f) (λ x, iff.rfl),
+  let R0 := mv_polynomial (vars f).to_set k,
+  sorry
 end
 
 end mv_polynomial
