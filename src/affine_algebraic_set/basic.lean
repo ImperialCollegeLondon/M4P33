@@ -41,29 +41,30 @@ algebraic geometry, algebraic variety
 -- let k be a commutative ring
 variables {k : Type*} [comm_ring k]
 
--- and let n be a natural number
-variable {n : ℕ}
+-- and let σ be any set -- but think of it as {1,2,3,...,n}. It's the set
+-- which indexes the variables of the polynomial ring we're thinking about.
+variable {σ : Type*}
 
 -- In Lean, the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is
--- denoted `mv_polynomial (fin n) k`. We could use better notation.
--- The set kⁿ is denoted `fin n → k` (which means maps from {0,1,2,...,(n-1)} to k).
+-- denoted `mv_polynomial σ k`. We could use better notation.
+-- The set kⁿ is denoted `σ → k` (which means maps from {1,2,...,n} to k).
 
 -- We now make some definitions which we'll need in the course.
 
 namespace mv_polynomial -- means "multivariable polynomial"
 
 /-- The set of zeros in kⁿ of a function f ∈ k[X₁, X₂, ..., Xₙ] -/
-def zeros (f : mv_polynomial (fin n) k) : set (fin n → k) :=
+def zeros (f : mv_polynomial σ k) : set (σ → k) :=
 {x | f.eval x = 0} -- I just want to write f(x) = 0 really
 
 /-- x is in the zeros of f iff f(x) = 0 -/
-@[simp] lemma mem_zeros (f : mv_polynomial (fin n) k) (x : fin n → k) :
+@[simp] lemma mem_zeros (f : mv_polynomial σ k) (x : σ → k) :
   x ∈ f.zeros ↔ f.eval x = 0 := iff.rfl
 
 -- note that the next result needs that k is a field. 
 
 /-- The zeros of f * g are the union of the zeros of f and of g -/
-lemma zeros_mul {k : Type*} [discrete_field k] (f g : mv_polynomial (fin n) k) :
+lemma zeros_mul {k : Type*} [discrete_field k] (f g : mv_polynomial σ k) :
   zeros (f * g) = zeros f ∪ zeros g :=
 begin
   -- two sets are equal if they have the same elements
@@ -101,14 +102,14 @@ instance : has_coe_to_fun (affine_algebraic_set k σ) :=
 }
 
 -- use `is_algebraic'` not `is_alegbraic` because the notation's right -- no "carrier".
-def is_algebraic (V : affine_algebraic_set k n) :
-  ∃ S : set (mv_polynomial (fin n) k), (V : set _) = ⋂ f ∈ S, zeros f :=
+def is_algebraic (V : affine_algebraic_set k σ) :
+  ∃ S : set (mv_polynomial σ k), (V : set _) = 𝕍 S :=
 affine_algebraic_set.is_algebraic' V
 
 -- Now some basic facts about affine algebraic subsets. 
 
 /-- Two affine algebraic subsets with the same carrier are equal! -/
-lemma ext {V W : affine_algebraic_set k n} : (V : set _) = W → V = W :=
+lemma ext {V W : affine_algebraic_set k σ} : (V : set _) = W → V = W :=
 begin
   intro h,
   cases V,
@@ -118,15 +119,15 @@ end
 
 -- Do I want this instance?
 -- /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
--- instance : has_mem (fin n → k) (affine_algebraic_set k n) :=
+-- instance : has_mem (σ → k) (affine_algebraic_set k n) :=
 -- ⟨λ x V, x ∈ V.carrier⟩
 
 -- Computer scientists insist on using ≤ for any order relation such as ⊆ .
 -- It is some sort of problem with notation I think. 
-instance : has_le (affine_algebraic_set k n) :=
-⟨λ V W, (V : set (fin n → k)) ⊆ W⟩
+instance : has_le (affine_algebraic_set k σ) :=
+⟨λ V W, (V : set (σ → k)) ⊆ W⟩
 
-instance : partial_order (affine_algebraic_set k n) :=
+instance : partial_order (affine_algebraic_set k σ) :=
 { le := (≤),
   le_refl := λ _ _, id,
   le_trans := λ _ _ _, set.subset.trans,
@@ -135,6 +136,7 @@ instance : partial_order (affine_algebraic_set k n) :=
 
 /-- Mathematicians want to talk about affine algebraic subsets of kⁿ
     being subsets of one another -/
-instance : has_subset (affine_algebraic_set k n) := ⟨affine_algebraic_set.has_le.le⟩
+instance : has_subset (affine_algebraic_set k σ) :=
+⟨affine_algebraic_set.has_le.le⟩
 
 end affine_algebraic_set

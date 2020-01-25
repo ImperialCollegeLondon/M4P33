@@ -10,18 +10,18 @@ open mv_polynomial
 
 variables {k : Type*} [comm_ring k]
 
-variable {n : Type*}
+variable {σ : Type*}
 
 open affine_algebraic_set
 
 /-- For S ⊆ k[X₁,X₂,…,Xₙ] we have S ⊆ 𝕀(𝕍(S))--/
-lemma 𝕀_of_𝕍_is_subset {S : set(mv_polynomial n k)} :
+lemma 𝕀_of_𝕍_is_subset {S : set(mv_polynomial σ k)} :
 S ⊆ 𝕀(𝕍(S)):=
 begin
     -- assume s ∈ S
     intros s HS,
     -- apply Definition of 𝕀 
-    rw 𝕀.mem_𝕀_iff,
+    rw mem_𝕀_iff,
     -- let x ∈ kⁿ be arbitrary 
     intro x,
     --apply Definition of 𝕍 
@@ -35,7 +35,7 @@ end
 
 /-- For S ⊆ k[X₁,X₂,…,Xₙ] we have 𝕍(𝕀(𝕍(S))) = 𝕍(S)
 e.g. 𝕍(𝕀(U)) = U if U is an algebraic set --/
-lemma 𝕀_of_𝕍 {S : set(mv_polynomial n k)} : 
+lemma 𝕀_of_𝕍 {S : set(mv_polynomial σ k)} : 
 𝕍(𝕀(𝕍(S))) = 𝕍(S):=
 begin
     -- ⊆ Inclusion: This follows from the fact that 𝕀(𝕍(S)) ⊆ S (shown above)
@@ -55,7 +55,7 @@ begin
     -- Apply definitions of 𝕍 and 𝕀
     rw mem_𝕍_iff,
     intro f,
-    rw 𝕀.mem_𝕀_iff,
+    rw mem_𝕀_iff,
 
     -- Rewrite Goal
     intro Q,

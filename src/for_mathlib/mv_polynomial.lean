@@ -361,19 +361,13 @@ begin
   apply coeff_map,
 end
 
--- I think I'll also need to learn about finsupp to do this one.
-lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
-  (f g : σ → R) (p : mv_polynomial σ R)
-  (h : ∀ i ∈ vars p, f i = g i) :
-eval f p = eval g p := sorry
-
---
+-- Thanks to Chris for this one
 
 lemma eval₂_eq_of_eq_on_vars {R : Type*} [comm_semiring R]
   {S : Type*} [comm_semiring S] {σ : Type*}
   (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
   [is_semiring_hom φ] -- do we need this??
-  (h : ∀ i ∈ (p.support.bind finsupp.support), f i = g i) :
+  (h : ∀ i ∈ vars' p, f i = g i) :
 eval₂ φ f p = eval₂ φ g p :=
 begin
   unfold eval₂,
@@ -383,7 +377,7 @@ begin
   congr' 1,
   refine finset.prod_congr rfl _,
   intros i hi,
-  simp only [finset.mem_bind, exists_imp_distrib] at h,
+  simp only [vars', finset.mem_bind, exists_imp_distrib] at h,
   have := h i x hx hi,
   rw this,
 end
@@ -420,20 +414,27 @@ lemma mem_rename_range {R : Type*} [comm_semiring R]
 
 -/
 
--- Thanks to Johan Commelin for doing a bunch of the stuff below
+-- We know `fin_eval_eq_zero` from above, which is the below
+-- theorem in the special case where `n` is finite.
+
+-- TODO -- prove the below using some direct limit argument
 
 /-- Over an infinite integral domain a polynomial f is zero iff it
     evaluates to zero everywhere -/
 lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
-  {n : Type*} {f : mv_polynomial n k} :
-(∀ x, eval x f = 0) ↔ f = 0 :=
+  {σ : Type*} {p : mv_polynomial σ k} :
+(∀ x, eval x p = 0) ↔ p = 0 :=
 begin
   split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
   intro hev,
 --  let X := fintype.of_finset (vars f) (λ x, iff.rfl),
-  let R0 := mv_polynomial (vars f).to_set k,
+  set σ₀ := ((vars' p).to_set : Type*) with h₀,
+  have vars'.finite : set.finite (vars' p).to_set := finset.finite_to_set (vars' p),
+  haveI : fintype σ₀ := by rw h₀; exact set.finite.fintype vars'.finite,
+  let R0 := mv_polynomial σ₀ k,
+  let p₀ : mv_polynomial σ₀ k :=  sorry,
+  -- I don't really have a plan for doing this.
   sorry
 end
 
 end mv_polynomial
-
