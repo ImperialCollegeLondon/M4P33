@@ -31,11 +31,11 @@ begin
     -- Our goal is to prove x ∈ 𝕍 S,
     -- or in other words that f(x) = 0 for all f ∈ S
     rw mem_𝕍_iff,
-    -- so say f ∈ S
-    intros f hf,
+    -- so say g ∈ S
+    intros g hg,
     -- now x ∈ 𝕍 (𝕀 A) by assumption, so f(x) = 0 forall f ∈ 𝕀 A,
     rw mem_𝕍_iff at hx,
-    -- so it suffices to prove f ∈ 𝕀 A
+    -- so it suffices to prove g ∈ 𝕀 A
     apply hx, clear hx,
     -- i.e. that f(y) = 0 for all y ∈ A
     rw mem_𝕀_iff,
@@ -60,3 +60,14 @@ begin
       rw is_closed_iff, use 𝕀 A}
   }
 end
+
+-- computer science version:
+lemma sheet_1.question_1' (A : set 𝔸ⁿ) : 𝕍 (𝕀 A) = closure A :=
+set.subset.antisymm
+  (λ x hx, mem_closure_iff'.2 $ λ C hC hAC, begin
+    cases (is_closed_iff _).1 hC with S hS,
+    rw hS at hAC ⊢,
+    exact λ g hg, hx _ (λ y hy, hAC hy _ hg), 
+  end)
+  ((closure_subset_iff_subset_of_is_closed $ (is_closed_iff _).2 ⟨_, rfl⟩).2 
+  (λ x hx f hf, hf _ hx))
