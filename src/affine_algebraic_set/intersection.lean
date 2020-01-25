@@ -26,7 +26,8 @@ to check that this works.
 
 ## References
 
-Martin Orr's lecture notes at https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
+Martin Orr's lecture notes at
+https://homepages.warwick.ac.uk/staff/Martin.Orr/2017-8/alg-geom/
 
 ## Tags
 
@@ -43,7 +44,7 @@ namespace affine_algebraic_set
 variables {k : Type*} [discrete_field k]
 
 -- and let n be a natural number
-variable {n : ℕ}
+variable {n : Type*}
 
 -- We're working with multivariable polynomials, so let's get access to their notation
 open mv_polynomial
@@ -52,16 +53,7 @@ open mv_polynomial
   is an affine algebraic subset of kⁿ -/
 def Inter (I : Type*) (V : I → affine_algebraic_set k n) :
   affine_algebraic_set k n :=
-sorry
-
-#exit
-
-#check lattice.infi
-#print notation ⋂
-
--- need to get intersection notation working 
-
-{ carrier := ⋂ (i : I) (V i : set _), -- the underlying set is the union of the two sets defining V and W
+{ carrier := ⋂ (i : I) (V i : set (n → k)), -- the underlying set is the union of the two sets defining V and W
   is_algebraic' :=
   -- We now need to prove that the union of V and W is cut out by some set of polynomials.
   begin
@@ -69,3 +61,6 @@ sorry
 
     -- Lean notation for kⁿ is `fin n → k`.
     -- Lean notation for k[X₁, X₂, ...,
+  sorry
+  end
+}

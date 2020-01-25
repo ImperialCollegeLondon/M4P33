@@ -7,7 +7,9 @@ Authors: Kevin Buzzard, and whoever else wants to join in.
 import data.mv_polynomial
 
 -- We want to be able to talk about V ⊆ W if V and W are affine algebraic sets
--- We will need import order.lattice at some point.
+-- We will need import order.lattice at some point I guess
+
+import affine_algebraic_set.V_and_I
 
 /-!
 # Affine algebraic sets
@@ -76,17 +78,24 @@ end mv_polynomial
 open mv_polynomial
 
 /-- An affine algebraic subset of kⁿ is the common zeros of a set of polynomials -/
-structure affine_algebraic_set (k : Type*) [comm_ring k] (n : ℕ) := 
--- a subset of the set of maps {0,1,2,...,n-1} → k (called "carrier")
-(carrier : set (fin n → k))
--- ...such that there's a set of polynomials such that the carrier is equal to the 
+structure affine_algebraic_set (k : Type*) [comm_semiring k] (σ : Type*) := 
+-- imagine σ = {1,2,3,...,n}, the general case is no different.
+-- Maps σ → k are another way of thinking about kⁿ.
+
+-- To give an affine algebraic set is to give two things: the set itself
+-- (called `carrier` in Lean) and the proof that it's in the image of 𝕍.
+
+-- carrier ⊆ kⁿ
+(carrier : set (σ → k))
+
+-- proof that there's a set S of polynomials such that the carrier is equal to the 
 -- intersection of the zeros of the polynomials in the set.
-(is_algebraic' : ∃ S : set (mv_polynomial (fin n) k), carrier = ⋂ f ∈ S, zeros f) -- ...such that
+(is_algebraic' : ∃ S : set (mv_polynomial σ k), carrier = 𝕍 S)
 
 namespace affine_algebraic_set
 
 -- this is invisible notation so mathematicians don't need to understand the definition
-instance : has_coe_to_fun (affine_algebraic_set k n) :=
+instance : has_coe_to_fun (affine_algebraic_set k σ) :=
 { F := λ _, _,
   coe := carrier
 }

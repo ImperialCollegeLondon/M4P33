@@ -36,6 +36,8 @@ end mv_polynomial
 
 namespace polynomial
 
+-- Thanks to Johan Commelin for doing a bunch of the eval stuff below.
+
 /-- Over an infinite integral domain a polynomial f is zero if it
     evaluates to zero everywhere -/
 lemma eval_eq_zero
@@ -316,15 +318,48 @@ begin
 end
 .
 
+-- no longer sure if I even care about `vars`.
 lemma mem_vars_iff_mem_degrees {R : Type*} [comm_semiring R] {σ : Type*}
   {p : mv_polynomial σ R} {n : σ} : n ∈ vars p ↔ n ∈ degrees p := 
 multiset.mem_to_finset
 
+-- Chris Hughes' alternative definition of `mv_polynomial.vars` using `bind`.
+-- I have no idea whether this should be noncomputable.
+/-- `vars' p` is the set of variables appearing in the polynomial `p`.
+    It's probably the same as `vars p`. -/
+noncomputable def vars' {R : Type*} {σ : Type*} [comm_semiring R]
+  (p : mv_polynomial σ R) :
+finset σ :=
+p.support.bind finsupp.support
+
+-- things which might need proving?
+
 -- I will need to learn the interface for finsupp to do this one
--- Remark: only need φ 0 = 0, not semiring hom.
+-- Remark: I think only need φ 0 = 0, not semiring hom, but coeff_map wanted it.
 lemma vars_map_sub {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S]
   {σ : Type*} {φ : R → S} [is_semiring_hom φ] {p : mv_polynomial σ R} :
-vars (map φ p) ⊆ vars p := sorry
+vars' (map φ p) ⊆ vars' p :=
+begin
+  intros i hi,
+  unfold vars' at hi ⊢,
+  rw finset.mem_bind at hi ⊢,
+  rcases hi with ⟨s, hs, his⟩,
+  use s,
+  existsi _, exact his, clear his i,
+  simp,
+  intro hps,
+  dunfold mv_polynomial at p,
+  have hps' : φ (p.to_fun s) = 0,
+    convert is_semiring_hom.map_zero _, assumption,
+  revert hs,
+  simp,
+  intro h1,
+  apply h1,
+  convert hps',
+  change mv_polynomial σ R at p,
+  change (map φ p).coeff s = φ (p.coeff s),
+  apply coeff_map,
+end
 
 -- I think I'll also need to learn about finsupp to do this one.
 lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
@@ -332,25 +367,61 @@ lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
   (h : ∀ i ∈ vars p, f i = g i) :
 eval f p = eval g p := sorry
 
+--
+
 lemma eval₂_eq_of_eq_on_vars {R : Type*} [comm_semiring R]
   {S : Type*} [comm_semiring S] {σ : Type*}
   (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
   [is_semiring_hom φ] -- do we need this??
-  (h : ∀ i ∈ vars p, f i = g i) :
+  (h : ∀ i ∈ (p.support.bind finsupp.support), f i = g i) :
 eval₂ φ f p = eval₂ φ g p :=
 begin
-  rw [eval₂_eq_eval_map, eval₂_eq_eval_map],
-  apply eval_eq_of_eq_on_vars,
-  intros i hi, 
-  exact h _ (vars_map_sub hi),
+  unfold eval₂,
+  unfold finsupp.sum finsupp.prod,
+  refine finset.sum_congr rfl _,
+  intros x hx,
+  congr' 1,
+  refine finset.prod_congr rfl _,
+  intros i hi,
+  simp only [finset.mem_bind, exists_imp_distrib] at h,
+  have := h i x hx hi,
+  rw this,
 end
+
+-- KB practicing.
+example {R : Type*} [comm_semiring R]
+  {S : Type*} [comm_semiring S] {σ : Type*}
+  (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
+  [is_semiring_hom φ] -- do we need this??
+  (h : ∀ i ∈ vars' p, f i = g i) :
+eval₂ φ f p = eval₂ φ g p :=
+begin
+  unfold eval₂,
+  unfold finsupp.prod finsupp.sum,
+  rw finset.sum_congr rfl,
+  intros x hx,
+  congr' 1,
+  rw finset.prod_congr rfl,
+  intros i hi,
+  rw h,
+  unfold vars',
+  rw finset.mem_bind,
+  use x,
+  use hx,
+  assumption,
+end
+
+/- Is this a sensible thing to prove?
 
 lemma mem_rename_range {R : Type*} [comm_semiring R]
   {σ τ : Type*} {g : σ → τ} (p : mv_polynomial τ R)
-  (h : (vars p).to_set ⊆ set.range g) :
+  (h : (vars' p).to_set ⊆ set.range g) :
   ∃ q : mv_polynomial σ R, rename g q = p := sorry
 
-#check rename
+-/
+
+-- Thanks to Johan Commelin for doing a bunch of the stuff below
+
 /-- Over an infinite integral domain a polynomial f is zero iff it
     evaluates to zero everywhere -/
 lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]

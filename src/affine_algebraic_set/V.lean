@@ -93,7 +93,7 @@ algebraic geometry, algebraic variety, 𝕍
 open mv_polynomial
 
 -- let k be a commutative ring
-variables {k : Type*} [comm_ring k]
+variables {k : Type*} [comm_semiring k]
 
 -- and let n be any set, but pretend it's {1,2,...,n} with n a natural number.
 -- We'll work with polynomials in variables X_i for i ∈ n.
@@ -416,9 +416,13 @@ end
 -- example of a commutative ring with that property which is not an
 -- integral domain. Is the theorem still true for this ring?
 
+-- there seems to be no `semiideal.span`. 
+
 /-- 𝕍(S) equals 𝕍(<S>), where <S> denotes the
   ideal of k[X₁,…,Xₙ] spanned by S. -/
-theorem 𝕍_span (S : set (mv_polynomial n k)) : 𝕍 S = 𝕍 (ideal.span S) :=
+theorem 𝕍_span {k : Type*} [comm_ring k] {n : Type*}
+  (S : set (mv_polynomial n k)) :
+𝕍 S = 𝕍 (ideal.span S) :=
 begin
   -- Let's prove ⊆ and ⊇
   apply set.subset.antisymm,
@@ -499,8 +503,9 @@ end
 open_locale classical
 
 -- 
-theorem 𝕍_fin (S : set (mv_polynomial n k)) [fintype n] [is_noetherian_ring k] :
-  ∃ (T : finset (mv_polynomial n k)), 𝕍 (S) = 𝕍 (↑T) := 
+theorem 𝕍_fin {k : Type*} [comm_ring k] {n : Type*}
+  (S : set (mv_polynomial n k)) [fintype n] [is_noetherian_ring k] :
+∃ (T : finset (mv_polynomial n k)), 𝕍 (S) = 𝕍 (↑T) := 
 begin
   -- We want to utilize the fact that all ideals in a notherian ring are
   -- finitely generated. In lean this is true by definition. First we use a
