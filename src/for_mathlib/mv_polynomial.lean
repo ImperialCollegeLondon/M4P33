@@ -1,5 +1,4 @@
 import data.mv_polynomial
-import data.polynomial
 
 -- workaround for the "open_locale at top of file" issue in Lean 3
 example : ℕ := 37
@@ -405,6 +404,46 @@ begin
   assumption,
 end
 
+def eq_sum_monomial_coeff {R : Type*} [comm_semiring R] {σ : Type*}
+{p : mv_polynomial σ R} :
+finset.sum p.support (λ s, monomial s (p.coeff s)) = p :=
+begin
+  apply mv_polynomial.ext,
+  intro s,
+  rw coeff_sum,
+  simp only [coeff_monomial],
+  by_cases hs : s ∈ p.support,
+  { rw ←finset.sum_subset (show {s} ⊆ p.support, begin
+      intros i hi,
+      convert hs,
+      cases hi, assumption, cases hi
+    end),
+    swap,
+    { intros t ht hts,
+      rw if_neg,
+      intro hts2,
+      apply hts,
+      rw hts2,
+      apply set.mem_singleton,
+    },
+    convert finset.sum_singleton,
+    rw if_pos,
+    refl
+  },
+  { rw ←finset.sum_subset (finset.empty_subset p.support),
+    swap,
+    { intros t ht1 ht2,
+      rw if_neg,
+      intro hts,
+      apply hs,
+      rwa hts at ht1,
+    },
+    rw finset.sum_empty,
+    rw finsupp.not_mem_support_iff at hs,
+    exact hs.symm
+  }
+end
+
 /- Is this a sensible thing to prove?
 
 lemma mem_rename_range {R : Type*} [comm_semiring R]
@@ -413,6 +452,39 @@ lemma mem_rename_range {R : Type*} [comm_semiring R]
   ∃ q : mv_polynomial σ R, rename g q = p := sorry
 
 -/
+
+lemma preimage_subtype_range {R : Type*} [comm_semiring R]
+  {σ : Type*} (p : mv_polynomial σ R) :
+  ∃ q : mv_polynomial {i : σ // i ∈ p.vars'} R, rename subtype.val q = p :=
+begin
+  use finset.sum p.support
+    (λ s, 
+      monomial (finsupp.comap_domain subtype.val s (λ _ _ _ _, subtype.eq))
+        (p.coeff s)),
+  apply mv_polynomial.ext,
+  intro s,
+  rw ←finset.sum_hom p.support (rename subtype.val),
+    all_goals {try {apply_instance}},
+  rw coeff_sum,
+  conv begin to_rhs,
+  rw ←@eq_sum_monomial_coeff _ _ _ p,
+  end,
+  rw coeff_sum,
+  apply finset.sum_congr rfl,
+  intros t ht,
+  rw coeff_monomial,
+  rw rename_monomial,
+  rw coeff_monomial,
+  congr',
+  rw finsupp.map_domain_comap_domain, intros i j, exact subtype.eq,
+  suffices : t.support ⊆ vars' p, by simpa,
+  unfold vars',
+  intros i hi,
+  rw finset.mem_bind,
+  use t,
+  use ht,
+  assumption,
+end
 
 -- We know `fin_eval_eq_zero` from above, which is the below
 -- theorem in the special case where `n` is finite.
@@ -427,14 +499,22 @@ lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
 begin
   split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
   intro hev,
---  let X := fintype.of_finset (vars f) (λ x, iff.rfl),
-  set σ₀ := ((vars' p).to_set : Type*) with h₀,
-  have vars'.finite : set.finite (vars' p).to_set := finset.finite_to_set (vars' p),
-  haveI : fintype σ₀ := by rw h₀; exact set.finite.fintype vars'.finite,
-  let R0 := mv_polynomial σ₀ k,
-  let p₀ : mv_polynomial σ₀ k :=  sorry,
-  -- I don't really have a plan for doing this.
-  sorry
+  cases preimage_subtype_range p with q hq,
+  suffices : q = 0,
+    rw this at hq, rw ←hq, apply is_semiring_hom.map_zero,
+  apply fin_eval_eq_zero,
+  intro s₀,
+  set s : σ → k := λ i, if hi : i ∈ p.vars' then s₀ ⟨i, hi⟩ else 0 with hs,
+  have hs₀ : s₀ = s ∘ subtype.val,
+    ext i,
+    rw hs,
+    dsimp, split_ifs, simp, cases i, contradiction,
+  rw hs₀,
+  rw ←eval_rename,
+  rw hq,
+  apply hev,
 end
+
+-- finset.sum p.support (λ s, monomial s (p.coeff s)) = p :=
 
 end mv_polynomial
