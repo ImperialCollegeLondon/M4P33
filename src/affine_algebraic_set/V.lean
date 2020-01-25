@@ -95,16 +95,16 @@ open mv_polynomial
 -- let k be a commutative ring
 variables {k : Type*} [comm_semiring k]
 
--- and let n be any set, but pretend it's {1,2,...,n} with n a natural number.
--- We'll work with polynomials in variables X_i for i ∈ n.
-variable {n : Type*}
+-- and let σ be any set, but pretend it's {1,2,...,n} with n a natural number.
+-- We'll work with polynomials in variables X_i for i ∈ σ.
+variable {σ : Type*}
 
 /- recall:
 
      Maths                 Lean 3
      ---------------------------------------
-     k[X₁, X₂, ..., Xₙ]    mv_polynomial n k
-     kⁿ                    n → k
+     k[X₁, X₂, ..., Xₙ]    mv_polynomial σ k
+     kⁿ                    σ → k
      subsets of X          set X
      the subset X of X     univ
      f(x)                  eval x f
@@ -113,8 +113,8 @@ variable {n : Type*}
 /-- 𝕍 : the function sending a subset S of k[X₁,X₂,…Xₙ] to
   the subset of kⁿ defined as the intersection of the zeros of all
   the elements of S. For more details, see Martin Orr's notes -/
-def 𝕍 (S : set (mv_polynomial n k)) : set (n → k) :=
-{x : n → k | ∀ f ∈ S, eval x f = 0}
+def 𝕍 (S : set (mv_polynomial σ k)) : set (σ → k) :=
+{x : σ → k | ∀ f ∈ S, eval x f = 0}
 
 -- Now let's prove a bunch of theorems about 𝕍, in a namespace
 
@@ -127,14 +127,14 @@ open set
 
 -- The following lemma has a trivial proof so don't worry about it.
 /-- x ∈ 𝕍 S ↔ for all f ∈ S, f(x) = 0. This is true by definition. -/
-lemma mem_𝕍_iff {S : set (mv_polynomial n k)} {x : n → k} :
+lemma mem_𝕍_iff {S : set (mv_polynomial σ k)} {x : σ → k} :
   x ∈ 𝕍 S ↔ ∀ f ∈ S, eval x f = 0 := iff.rfl
 
 -- The rest of the proofs in this file are supposed to be comprehensible
 -- to mathematicians 
 
 /-- 𝕍(∅) = kⁿ -/
-lemma 𝕍_empty : 𝕍 (∅ : set (mv_polynomial n k)) = univ :=
+lemma 𝕍_empty : 𝕍 (∅ : set (mv_polynomial σ k)) = univ :=
 begin
   -- We need to show that for all x in kⁿ, x ∈ 𝕍 ∅
   rw eq_univ_iff_forall,
@@ -173,7 +173,7 @@ begin
 end
 
 /-- 𝕍({0}) = kⁿ -/
-lemma 𝕍_zero : 𝕍 ({0} : set (mv_polynomial n k)) = univ :=
+lemma 𝕍_zero : 𝕍 ({0} : set (mv_polynomial σ k)) = univ :=
 begin
   -- It suffices to prove every element of kⁿ is in 𝕍(0)
   rw eq_univ_iff_forall,
@@ -214,7 +214,7 @@ begin
 end
 
 /-- If S ⊆ T then 𝕍(T) ⊆ 𝕍(S) -/
-theorem 𝕍_antimono (S T : set (mv_polynomial n k)) :
+theorem 𝕍_antimono (S T : set (mv_polynomial σ k)) :
   S ⊆ T → 𝕍 T ⊆ 𝕍 S :=
 begin
   -- We are assuming S ⊆ T
@@ -234,7 +234,7 @@ begin
   exact hST hs
 end
 
-theorem 𝕍_union (S T : set (mv_polynomial n k)) :
+theorem 𝕍_union (S T : set (mv_polynomial σ k)) :
 𝕍 (S ∪ T) = 𝕍 S ∩ 𝕍 T :=
 begin
   -- let's prove this equality of sets by proving ⊆ and ⊇
@@ -287,7 +287,7 @@ end
 
 -- Infinite (or rather, arbitrary) unions work just the same
 -- We consider a collection Sᵢ of subsets indexed by i ∈ I.
-theorem 𝕍_Union {I : Type*} (S : I → set (mv_polynomial n k)) :
+theorem 𝕍_Union {I : Type*} (S : I → set (mv_polynomial σ k)) :
 𝕍 (⋃ i, S i) = ⋂ i, 𝕍 (S i) :=
 begin
   -- To prove equality of two subsets of kⁿ it suffices to prove ⊆ and ⊇.
@@ -336,7 +336,7 @@ end
 
 -- For convenience, let's define multiplication on subsets of k[X₁,X₂,…,Xₙ]
 -- in the obvious way: S * T := {s * t | s ∈ S, t ∈ T}.
-instance : has_mul (set (mv_polynomial n k)) :=
+instance : has_mul (set (mv_polynomial σ k)) :=
 ⟨λ S T, {u | ∃ (s ∈ S) (t ∈ T), u = s * t}⟩
 
 -- For this theorem, we need that k satisfies a * b = 0 => a = 0 or b = 0
@@ -532,16 +532,16 @@ begin
 end
 
 def Zariski_topology {k : Type*} [integral_domain k] :
-  topological_space (n → k) := 
+  topological_space (σ → k) := 
 { -- First we need to define what an open is, in lean we need to give a function
   -- from set (n → k) → Prop i.e. a function which takes a set in k^n and
   -- determines if this is open or not.
-  is_open := λ U, ∃ (S : set (mv_polynomial n k)), U = -𝕍 (S),
+  is_open := λ U, ∃ (S : set (mv_polynomial σ k)), U = -𝕍 (S),
   -- Secondly we show that univ, the whole set, is open.
   is_open_univ :=
   begin
     -- we know that the whole set will be the required set, so we "use univ"
-    use (univ : set (mv_polynomial n k)),
+    use (univ : set (mv_polynomial σ k)),
     -- Use fact that V(univ) = ∅
     rw 𝕍_univ,
     -- Putting goal into canonical form, i.e. use the frontend notations such
@@ -576,11 +576,11 @@ def Zariski_topology {k : Type*} [integral_domain k] :
   -- Let opens be the set of opens that we wish to union over
   intros opens open_comp,
   -- Define H to be the set of sets of polynomials S s.t. - 𝕍 (S) is in opens.
-  let H := {S : set (mv_polynomial n k) | - 𝕍 (S) ∈ opens},
+  let H := {S : set (mv_polynomial σ k) | - 𝕍 (S) ∈ opens},
   -- We now want to show that union over H satisfies the goal
   use ⋃₀ H,
   -- converting from sUnion to Union so that we can use the lemma 𝕍_union
-  rw @sUnion_eq_Union (mv_polynomial n k) H,
+  rw @sUnion_eq_Union (mv_polynomial σ k) H,
   rw 𝕍_Union,
   -- putting goal in canonical form
   show ⋃₀ opens = - (⋂ (i : H), 𝕍 (i.val)),
