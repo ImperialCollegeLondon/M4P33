@@ -488,8 +488,7 @@ end
 
 -- We know `fin_eval_eq_zero` from above, which is the below
 -- theorem in the special case where `n` is finite.
-
--- TODO -- prove the below using some direct limit argument
+-- We now use it to prove the general case. 
 
 /-- Over an infinite integral domain a polynomial f is zero iff it
     evaluates to zero everywhere -/
