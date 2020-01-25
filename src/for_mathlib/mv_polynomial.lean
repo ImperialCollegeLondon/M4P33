@@ -320,29 +320,106 @@ lemma mem_vars_iff_mem_degrees {R : Type*} [comm_semiring R] {σ : Type*}
   {p : mv_polynomial σ R} {n : σ} : n ∈ vars p ↔ n ∈ degrees p := 
 multiset.mem_to_finset
 
+
+variables {R : Type*} [comm_semiring R] {σ : Type*} {p : mv_polynomial σ R} 
+#check finset.bind (p.support : finset (σ →₀ ℕ)) finsupp.support
+
+#check finset.sup -- a fold
+#check finset.bind -- via multiset.bind 
+#check multiset.bind -- join map
+#check multiset.sum -- a foldr
+
+lemma puzzle (α : Type*) (s : finset α) (β : Type*) [decidable_eq β]
+  (f : α → finset β) :
+finset.bind s f = finset.sup s f  :=
+begin
+  ext x,
+  rw finset.mem_bind,
+  split,
+  { rintro ⟨a, has, hxa⟩,
+    have h : f a ≤ _ := finset.le_sup has,
+    exact h hxa
+  },
+  { intro hx,
+    sorry
+
+  }
+end
+
+example {R : Type*} [comm_semiring R] {σ : Type*} {p : mv_polynomial σ R} :
+vars p = p.support.bind finsupp.support :=
+begin
+  ext x,
+  rw mem_vars_iff_mem_degrees,
+  unfold degrees,
+  congr',
+  rw puzzle,
+  simp,
+  sorry
+  -- unfold finsupp.to_multiset,
+  -- rw finset.sup_eq_supr,
+  -- unfold finset.sup,
+  -- unfold finset.bind,
+  -- simp,
+  -- split,
+  -- rw mem_sup,
+end
+
 -- I will need to learn the interface for finsupp to do this one
 -- Remark: only need φ 0 = 0, not semiring hom.
 lemma vars_map_sub {R : Type*} [comm_semiring R] {S : Type*} [comm_semiring S]
   {σ : Type*} {φ : R → S} [is_semiring_hom φ] {p : mv_polynomial σ R} :
-vars (map φ p) ⊆ vars p := sorry
+vars (map φ p) ⊆ vars p :=
+begin
+  intro i,
+  sorry,
+end
 
 -- I think I'll also need to learn about finsupp to do this one.
-lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
-  (f g : σ → R) (p : mv_polynomial σ R)
-  (h : ∀ i ∈ vars p, f i = g i) :
-eval f p = eval g p := sorry
+-- lemma eval_eq_of_eq_on_vars {R : Type*} [comm_semiring R] {σ : Type*}
+--   (f g : σ → R) (p : mv_polynomial σ R)
+--   (h : ∀ i ∈ (p.support.bind finsupp.support), f i = g i) :
+-- eval f p = eval g p :=
+-- begin
+--   unfold eval,
+--   sorry
+-- end
 
 lemma eval₂_eq_of_eq_on_vars {R : Type*} [comm_semiring R]
   {S : Type*} [comm_semiring S] {σ : Type*}
   (f g : σ → S) (φ : R → S) (p : mv_polynomial σ R)
   [is_semiring_hom φ] -- do we need this??
-  (h : ∀ i ∈ vars p, f i = g i) :
+  (h : ∀ i ∈ (p.support.bind finsupp.support), f i = g i) :
+  -- *TODO* why does the pretty printer change that to the less
+  -- mathematician-friendly 
+  -- h : ∀ (i : σ), i ∈ finset.bind (p.support) finsupp.support → f i = g i
+  -- ?
 eval₂ φ f p = eval₂ φ g p :=
 begin
-  rw [eval₂_eq_eval_map, eval₂_eq_eval_map],
-  apply eval_eq_of_eq_on_vars,
-  intros i hi, 
-  exact h _ (vars_map_sub hi),
+  unfold eval₂,
+  --*TODO*: goal now starts
+  -- ⊢ finsupp.sum p (λ (s : σ →₀ ℕ)
+  -- Why is this not displayed as ⊢ p.sum ...?
+  -- Of course what I really want is $\Sigma_p$
+  -- or one of its myriad variants.
+  -- This would be less confusing for mathematicians.
+  unfold finsupp.sum finsupp.prod,
+  refine finset.sum_congr rfl _,
+  intros x hx,
+  congr' 1,
+  refine finset.prod_congr rfl _,
+  intros i hi,
+  /-
+  simp only [finset.mem_bind, exists_imp_distrib] at h,
+  have := h i x hx hi,
+  rw this,
+  -/
+  replace h := h i,
+  rw finset.mem_bind at h,
+  rw exists_imp_distrib at h,
+  replace h := h x,
+  rw exists_imp_distrib at h,
+  rw h, assumption, assumption
 end
 
 lemma mem_rename_range {R : Type*} [comm_semiring R]
@@ -350,7 +427,8 @@ lemma mem_rename_range {R : Type*} [comm_semiring R]
   (h : (vars p).to_set ⊆ set.range g) :
   ∃ q : mv_polynomial σ R, rename g q = p := sorry
 
-#check rename
+open function
+
 /-- Over an infinite integral domain a polynomial f is zero iff it
     evaluates to zero everywhere -/
 lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
@@ -359,7 +437,10 @@ lemma eval_eq_zero  {k : Type*} [integral_domain k] [infinite k]
 begin
   split, swap, intros hf x, rw [hf, eval_zero], -- easy direction
   intro hev,
---  let X := fintype.of_finset (vars f) (λ x, iff.rfl),
+  let n0 := ((vars f).to_set : Type _),
+  let g : n0 → n := λ i, i.1,
+  have g_inj : injective g,
+    intros i1 i2 h, exact subtype.ext.2 h,
   let R0 := mv_polynomial (vars f).to_set k,
   sorry
 end
