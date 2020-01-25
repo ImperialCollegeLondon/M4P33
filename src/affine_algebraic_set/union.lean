@@ -63,8 +63,8 @@ namespace affine_algebraic_set
 -- let k be a field
 variables {k : Type*} [discrete_field k]
 
--- and let n be a natural number
-variable {n : ℕ}
+-- and let σ be any set e.g. {1,2,3,...,n}
+variable {σ : Type*}
 
 -- We're working with multivariable polynomials, so let's get access to their notation
 open mv_polynomial
@@ -72,22 +72,22 @@ open mv_polynomial
 -- Now here's a basic fact about affine algebraic sets.
 
 /-- The union of two algebraic subsets of kⁿ is an algebraic subset-/
-def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
+def union (V W : affine_algebraic_set k σ) : affine_algebraic_set k σ :=
 { carrier := V ∪ W, -- the underlying set is the union of the two sets defining V and W
   is_algebraic' :=
   -- We now need to prove that the union of V and W is cut out by some set of polynomials.
   begin
     -- Now here's the bad news. 
 
-    -- Lean notation for kⁿ is `fin n → k`.
-    -- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial (fin n) k`.
+    -- Lean notation for kⁿ is `σ → k`.
+    -- Lean notation for k[X₁, X₂, ..., Xₙ] is `mv_polynomial σ k`.
     -- Lean notation for the subsets of X is `set X`
 
     -- Let's state what we're trying to prove, using Lean's notation.
     show 
-    ∃ (U : set (mv_polynomial (fin n) k)),
+    ∃ (U : set (mv_polynomial σ k)),
       -- such that
-      (V : set _) ∪ W = ⋂ f ∈ U, zeros f,
+      (V : set _) ∪ W = 𝕍 U,
     -- say S is the set that defines V
     cases V.is_algebraic with S hS,
     -- and T is the set that defines W
@@ -108,25 +108,24 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
     apply set.subset.antisymm,
     { -- Here's the easier of the two inclusions.
       -- say x ∈ V ∪ W,
-      intros x hx,
+      intros x hx, rw mem_𝕍_iff,
       -- it's either in V or W.
       cases hx with hxV hxW,
       { -- Say x ∈ V
         -- We know that x vanishes at every element of S.
-        rw set.mem_Inter at hxV,
+        rw mem_𝕍_iff at hxV,
         -- We want to prove x vanishes at every polynomial of the form s * t
         -- with s ∈ S and t ∈ T.
-        rw set.mem_Inter,
         -- so let's take an element u of the form s * t
         rintro u,
         -- Let's now notice that the goal has got completely out of hand, and
         -- simplify it back to ∀ s ∈ S and ∀ t ∈ T, (s * t)(x) = 0.
         suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-        {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
+        {rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
         -- we need to show st(x)=0.
         -- Because x ∈ V, we have s(x)=0. 
-        have hx := set.mem_Inter.1 (hxV s) hs,
+        have hx := (hxV s) hs,
         change s.eval x = 0 at hx,
         -- It suffices to show s(x)*t(x)=0
         rw eval_mul,
@@ -137,13 +136,12 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
       },
       { -- This is the case x ∈ W and it's essentially completely the same as the x ∈ V argument so I won't
         -- comment it. Some sort of argument with the `wlog` tactic might be able to do this.
-        rw set.mem_Inter at hxW ⊢,
+        rw mem_𝕍_iff at hxW,
         rintro u,
           suffices : ∀ s ∈ S, ∀ t ∈ T, u = s * t → u.eval x = 0,
-          {rw [set.mem_Inter], rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
+          { rintros ⟨s, hsS, t, htT, rfl⟩, exact this s hsS t htT rfl},
         rintro s hs t ht rfl,
         have hx := hxW t,
-        rw set.mem_Inter at hx,
         replace hx : eval x t = 0 := hx ht,
         rw eval_mul,
         rw hx, simp,
@@ -151,8 +149,8 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
     },
     { -- This is the harder way; we need to check that if x vanishes on every element of S*T, 
       -- then x ∈ V or x ∈ W.
-      intros x hx,
-      have hx' : ∀ u s : mv_polynomial (fin n) k, s ∈ S → ∀ t ∈ T, u = s * t → u.eval x = 0,
+      intros x hx, rw mem_𝕍_iff at hx,
+      have hx' : ∀ u s : mv_polynomial σ k, s ∈ S → ∀ t ∈ T, u = s * t → u.eval x = 0,
         simpa using hx,
       classical, -- We now proudly assume the law of the excluded middle.
       -- If x ∈ V then the result is easy...
@@ -160,14 +158,14 @@ def union (V W : affine_algebraic_set k n) : affine_algebraic_set k n :=
         left, rwa ←hS,
       -- ...so we can assume assume x ∉ V,
       -- and hence that there's s ∈ S such that s(x) ≠ 0
-      rw [hS, set.mem_Inter, not_forall] at hx2,
+      rw [hS, mem_𝕍_iff, not_forall] at hx2,
       cases hx2 with s hs,
       have hs2 : s ∈ S ∧ ¬eval x s = 0,
         simpa using hs,
       cases hs2 with hsS hns,
       -- we now show x ∈ W
       right,
-      rw set.mem_Inter,
+      rw mem_𝕍_iff,
       -- Say t ∈ T
       intro t,
       -- We want to prove that t(x) = 0.

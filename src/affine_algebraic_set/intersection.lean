@@ -43,24 +43,29 @@ namespace affine_algebraic_set
 -- let k be a field
 variables {k : Type*} [discrete_field k]
 
--- and let n be a natural number
-variable {n : Type*}
+-- and let σ be a set of indexes for our polynomial variables e.g. σ = {1,2,...,n}
+variable {σ : Type*}
 
 -- We're working with multivariable polynomials, so let's get access to their notation
 open mv_polynomial
 
+-- this should be proved by general nonsense really. 
+
 /-- An arbitrary intersection of affine algebraic subsets of kⁿ
   is an affine algebraic subset of kⁿ -/
-def Inter (I : Type*) (V : I → affine_algebraic_set k n) :
-  affine_algebraic_set k n :=
-{ carrier := ⋂ (i : I) (V i : set (n → k)), -- the underlying set is the union of the two sets defining V and W
+def Inter (I : Type*) (V : I → affine_algebraic_set k σ) :
+  affine_algebraic_set k σ :=
+{ carrier := ⋂ (i : I), (V i : set (σ → k)), -- the underlying set is the union of the two sets defining V and W
   is_algebraic' :=
-  -- We now need to prove that the union of V and W is cut out by some set of polynomials.
+  -- We now need to prove that the union is cut out by some set of polynomials.
   begin
-    -- Now here's the bad news. 
-
-    -- Lean notation for kⁿ is `fin n → k`.
-    -- Lean notation for k[X₁, X₂, ...,
-  sorry
+    use ⋃ (i : I), (classical.some (V i).is_algebraic),
+    ext x,
+    rw 𝕍_Union,
+    congr',
+    funext i,
+    exact classical.some_spec (V i).is_algebraic,
   end
 }
+
+end affine_algebraic_set
