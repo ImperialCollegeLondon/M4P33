@@ -15,6 +15,7 @@ theorem Zariskis_lemma
   -- Assume that there's a finite subset s of K
   (s : set K) (hfs : s.finite)
   -- which generates K as a k-algebra
+  -- (note: `⊤` is "the largest k-subalgebra of K", i.e., K)
   (hsgen : algebra.adjoin k s = ⊤)
   -- Then
   :
