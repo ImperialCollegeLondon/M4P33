@@ -8,7 +8,7 @@ open_locale classical -- classical logic
 
 open affine_algebraic_set
 
-local notation `𝔸ⁿ` := σ → k
+local notation `𝔸ⁿ` := σ → k -- thank you Sebastian Ullrich!
 
 -- Question: Let A be any subset of 𝔸ⁿ.
 -- Prove that 𝕍(𝕀(A)) is the Zariski closure of A.

@@ -29,36 +29,36 @@ import data.set.lattice
 universes u v -- set theorists can set these both to be 0.
               -- (R : Type 0) means "let R be a set".
 
--- Let $R$ be a set.
--- For example $R$ could be the ring `k[X₁,…,Xₙ]`
+-- Let R be a set.
+-- For example R could be the ring `k[X₁,…,Xₙ]`
 variables (R : Type u)
 -- When we're talking about 𝕍 and 𝕀, we will not mention R as part
 -- of the notation even though it is playing a role
 {R}
 
--- Let $\mathbb{A}^n$ be another set.
+-- Let 𝔸ⁿ be another set.
 variables (A : Type v)
 -- Similarly we will not explicitly mention A most of the time
 {A}
 
--- Let $P$ be a way of getting a true/false statement from a pair of
--- elements $f ∈ R$ and $x ∈ \mathbb{A}^n$. For example $P(f,x)$ can be
--- the statement that $f(x) = 0$. You can think of $P$ as being a subset
--- of $R\times \mathbb{A}^n$ if you like.
+-- Let `P` be a way of getting a true/false statement from a pair of
+-- elements f ∈ R and x ∈ 𝔸ⁿ. For example P(f,x) can be
+-- the statement that `f(x) = 0`. You can think of `P` as being a subset
+-- of R × 𝔸ⁿ if you like.
 variable (P : R → A → Prop)
 include P
 
--- Let $\mathbb{V}$, a function from subsets of $R$ to subsets of
--- $\mathbb{A}^n$, and $\mathbb{I}$, a function from subsets of $\mathbb{A}^n$
--- to subsets of $R$, be defined in the usual way.
+-- Let 𝕍, a function from subsets of R to subsets of
+-- 𝔸ⁿ, and 𝕀, a function from subsets of 𝔸ⁿ
+-- to subsets of R, be defined in the usual way.
 -- One can think of 𝕍(S) as being the largest U such that S × U ⊆ P,
 -- and 𝕀(U) as being the largest S such that S × U ⊆ P.
 
 -- The main theorem we will prove today is
 
--- $\mathbf{theorem} For all $S\subseteq R$, $\V(\I(\V(S)))=\V(S)$, possibly
+-- *Theorem* For all S ⊆ R, 𝕍(𝕀(𝕍(S)))=𝕍(S),
 -- assuming some irrelevant extra hypotheses, such as the assumption
--- that $k$ is algebraically closed, or $S$ is an ideal.
+-- that k is algebraically closed, or S is an ideal.
 
 def 𝕍_ (S : set R) : set A :=
 {x : A | ∀ f ∈ S, P f x}

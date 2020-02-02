@@ -47,7 +47,7 @@ variable {σ : Type*}
 
 -- In Lean, the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is
 -- denoted `mv_polynomial σ k`. We could use better notation.
--- The set kⁿ is denoted `σ → k` (which means maps from {1,2,...,n} to k).
+-- The set 𝔸ⁿ or kⁿ is denoted `σ → k` (which means maps from {1,2,...,n} to k).
 
 -- We now make some definitions which we'll need in the course.
 
