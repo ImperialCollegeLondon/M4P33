@@ -24,7 +24,6 @@ import ring_theory.noetherian
 import ring_theory.polynomial
 import topology.basic
 
-
 /-!
 # Lecture 2 : The 𝕍 construction
 
@@ -85,7 +84,6 @@ Martin Orr's lecture notes at
 
 algebraic geometry, algebraic variety, 𝕍
 -/
-
 -- code starts here
 
 -- We're dealing with multivariable polynomials so let's open the
@@ -99,12 +97,14 @@ variables {k : Type*} [comm_semiring k]
 -- We'll work with polynomials in variables X_i for i ∈ σ.
 variable {σ : Type*}
 
+local notation `𝔸ⁿ` := σ → k 
+
 /- recall:
 
      Maths                 Lean 3
      ---------------------------------------
      k[X₁, X₂, ..., Xₙ]    mv_polynomial σ k
-     kⁿ                    σ → k
+     kⁿ or 𝔸ⁿ              σ → k
      subsets of X          set X
      the subset X of X     univ
      f(x)                  eval x f
@@ -113,8 +113,8 @@ variable {σ : Type*}
 /-- 𝕍 : the function sending a subset S of k[X₁,X₂,…Xₙ] to
   the subset of kⁿ defined as the intersection of the zeros of all
   the elements of S. For more details, see Martin Orr's notes -/
-def 𝕍 (S : set (mv_polynomial σ k)) : set (σ → k) :=
-{x : σ → k | ∀ f ∈ S, eval x f = 0}
+def 𝕍 (S : set (mv_polynomial σ k)) : set 𝔸ⁿ :=
+{x : 𝔸ⁿ | ∀ f ∈ S, eval x f = 0}
 
 -- Now let's prove a bunch of theorems about 𝕍, in a namespace
 

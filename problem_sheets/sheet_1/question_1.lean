@@ -2,13 +2,13 @@ import affine_algebraic_set.Zariski -- Zariski topology
 import affine_algebraic_set.V_and_I -- 𝕍 and 𝕀 basics
 import for_mathlib.topological_space -- silly fact about closed sets I couldn't find
 
-variables {k : Type*} [integral_domain k] {σ : Type*}
+open affine_algebraic_set
 
 open_locale classical -- classical logic
 
-open affine_algebraic_set
+variables (σ : Type*) (k : Type*) [integral_domain k]
 
-local notation `𝔸ⁿ` := σ → k -- thank you Sebastian Ullrich!
+local notation `𝔸ⁿ` := σ → k
 
 -- Question: Let A be any subset of 𝔸ⁿ.
 -- Prove that 𝕍(𝕀(A)) is the Zariski closure of A.
@@ -20,6 +20,7 @@ begin
   { -- Here we prove 𝕍 (𝕀 A) ⊆ closure A
     -- say x ∈ 𝕍 (𝕀 A)
     intros x hx,
+    change 𝔸ⁿ at x,
     -- it suffices to prove that x is in every closed set containing A,
     rw mem_closure_iff',
     -- so let C be a closed set containing A
