@@ -100,16 +100,17 @@ begin
     -- Let S' be S minus {s}
     set S' := S \ {s} with hS',
     -- then S' is finite(!)
-    haveI : fintype S := sorry,
-    haveI : fintype S' := fintype.of_injective (λ s, _ : S' → S) _,
+    haveI : fintype S' := set.finite.fintype (set.finite_subset hfs (set.diff_subset _ _)),
     -- then S' has size d.
     have hs' : fintype.card S' = d,
+      -- gaargh
+      sorry,
     -- by the inductive hypo, K is algebraic over L, so it's
     -- algebraic over k[s][1/D] for some denominator D; this
     -- means k[s][1/D] is a field, which can't happen (it implies
     -- that D is in every maximal ideal of k[s] and hence 1+D is in
     -- none of them, thus 1+D is in k, so D is too, contradiction)
-    repeat {sorry}
+    sorry
   }
 end
 
