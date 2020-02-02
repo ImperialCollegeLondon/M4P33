@@ -8,7 +8,7 @@ Kevin Buzzard
 
 import affine_algebraic_set.basic -- the basic theory of affine algebraic sets.
 
-/-
+/-!
 # The union of two affine algebraic sets is affine.
 
 Let k be a field and let n be a natural number. We prove the following
