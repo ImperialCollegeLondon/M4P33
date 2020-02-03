@@ -49,6 +49,7 @@ def id (V : affine_algebraic_set k σ) : V →ᵣ V :=
     exact hx
   end }
 
+/-- A regular map between varieties gives a ring map on regular functions. -/
 def comap (φ : V →ᵣ W) : regular_fun W →+* regular_fun V :=
 { to_fun := λ f, 
   { to_fun := λ x, f (φ x),
@@ -63,8 +64,10 @@ def comap (φ : V →ᵣ W) : regular_fun W →+* regular_fun V :=
       -- we need a polynomial in k[X_σ]
       -- I think it's F(G_t) -- the evaluation of F when X_t ↦ G_t
       use eval₂ (C : k → mv_polynomial σ k) 
-        (λ t, 0 : τ → mv_polynomial σ k) F,
-
+        (λ t, classical.some (φ.to_regular_fun t).is_regular' : τ → mv_polynomial σ k) F,
+      intros x hx,
+      set H := λ t, classical.some_spec (φ.to_regular_fun t).is_regular',
+      sorry
     end
   },
   map_one' := _,
