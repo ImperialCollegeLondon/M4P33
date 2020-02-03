@@ -16,41 +16,57 @@ A _regular function_ on V is a function V → k which is induced
 by some polynomial F ∈ k[X₁, X₂, …, Xₙ]. Note that F itself
 is not part of the data, and a regular function can be induced
 by more than one polynomial in general.
+
 -/
 
 
-variables {k : Type*} [integral_domain k] {σ : Type*}
+variables {k : Type*} [integral_domain k] {n : Type*}
 
-local notation `𝔸ⁿ` := σ → k
+local notation `𝔸ⁿ` := n → k
+local notation `k[n]` := mv_polynomial n k
 
--- A mathematician doesn't even need to look at most of this file.
--- The constructions are obvious and the proofs are trivial. 
+-- The idea: a mathematician shouldn't need to look at most of this file.
+-- The plan would be that they just read the API in the comments above. 
 
 -- They just need to know the API. 
 
-/-- A "regular function" is a pair: a function V → k, and a proof that
-it comes from a polynomial -/
-structure regular_fun (V : affine_algebraic_set k σ) :=
-(to_fun : {x : 𝔸ⁿ // x ∈ (V : set 𝔸ⁿ)} → k)
-(is_regular' : ∃ F : mv_polynomial σ k,
-   ∀ (x : 𝔸ⁿ) (hx : x ∈ V), to_fun ⟨x, hx⟩ = F.eval x)
+-- Throughout this file, let V ⊆ 𝔸ⁿ be an affine algebraic subset.
+variable {V : affine_algebraic_set k n}
 
-local notation `k[` V `]` := regular_fun V
-
-variable {V : affine_algebraic_set k σ}
+local notation `subset_of` := set
 
 open mv_polynomial
+
+def is_regular2 (f : (V : subset_of 𝔸ⁿ) → k) : Prop :=
+  ∃ F : k[n], ∀ (x : 𝔸ⁿ) (hx : x ∈ V), F.eval x = f ⟨x, hx⟩
+
+def is_regular (f : (V : subset_of 𝔸ⁿ) → k) : Prop :=
+  ∃ F : k[n], ∀ (x : (V : subset_of 𝔸ⁿ)), F.eval x = f x
+
+/-- A "regular function" is a pair: a function V → k, and a proof that
+it comes from a polynomial -/
+structure regular_fun (V : affine_algebraic_set k n) :=
+(to_fun : {x : 𝔸ⁿ // x ∈ (V : subset_of 𝔸ⁿ)} → k)
+(is_regular' : is_regular to_fun)
+
+local notation `k[V]` := regular_fun V
 
 namespace regular_fun
 
 /-- A regular function on V can be regarded as a function from V to k -/
-instance (V : affine_algebraic_set k σ)
-: has_coe_to_fun (k[V]) :=
+instance : has_coe_to_fun (k[V]) :=
 ⟨_, regular_fun.to_fun⟩
 
+variable {V}
+
+def mk' : k[n] → k[V] := λ F,
+{ to_fun := λ x, F.eval x, -- i.e. F(x)
+  is_regular' := ⟨F, λ x, rfl⟩ }
+
 /-- A regular function is induced from a polynomial -/
-lemma is_regular (f : k[V]): ∃ F : mv_polynomial σ k,
-   ∀ (x : 𝔸ⁿ) (hx : x ∈ V), f ⟨x, hx⟩ = F.eval x := f.is_regular'
+lemma is_regular (f : k[V]): ∃ F : k[n],
+   ∀ (x : (V : subset_of 𝔸ⁿ)), F.eval x = f x := f.is_regular'
+
 
 /- Two regular functions are equal if and only if their
  underlying functions V → k are equal -/
@@ -99,7 +115,7 @@ def add (f g : k[V]) : k[V] :=
     cases f.is_regular with F hF,
     cases g.is_regular with G hG,
     use F + G,
-    intros x hx,
+    intro x,
     rw eval_add,
     rw hF,
     rw hG,
@@ -114,7 +130,7 @@ def neg (f : k[V]) : k[V] :=
     -- additive inverse of a regular function is regular
     cases f.is_regular with F hF,
     use -F,
-    intros x hx,
+    intro x,
     rw eval_neg,
     rw hF,
   end
@@ -129,7 +145,7 @@ def mul (f g : k[V]) : k[V] :=
     cases f.is_regular with F hF,
     cases g.is_regular with G hG,
     use F * G,
-    intros x hx,
+    intro x,
     rw eval_mul,
     rw hF,
     rw hG,
@@ -159,10 +175,10 @@ instance : comm_ring (k[V]) :=
 end regular_fun
 
 /-- The ring homomorphism from k[X₁, X₂, …, Xₙ] to k[V] -/
-noncomputable def mv_polynomial.to_regular_fun : mv_polynomial σ k →+* k[V] :=
+noncomputable def mv_polynomial.to_regular_fun : mv_polynomial n k →+* k[V] :=
 { to_fun := λ F,
   { to_fun := λ x, F.eval x.1,
-    is_regular' := ⟨F, λ x hx, rfl⟩
+    is_regular' := ⟨F, λ x, rfl⟩
   },
   -- proof that it's a ring homomorphism
   map_one' := begin
@@ -190,21 +206,20 @@ open mv_polynomial function
 
 lemma to_regular_fun.surjective :
   surjective
-    ((to_regular_fun : mv_polynomial σ k →+* k[V]) : mv_polynomial σ k → k[V]) :=
+    ((to_regular_fun : mv_polynomial n k →+* k[V]) : mv_polynomial n k → k[V]) :=
 begin
   intro f,
   cases f.is_regular with F hF,
   use F,
   ext x,
-  cases x with x hx,
-  rw hF x hx,
+  rw ←hF x,
   refl,
 end
 
 open affine_algebraic_set
 
-lemma to_regular_fun.mem_kernel (F : mv_polynomial σ k) :
-  ((to_regular_fun : mv_polynomial σ k →+* k[V]) : mv_polynomial σ k → k[V]) F = 0
+lemma to_regular_fun.mem_kernel (F : mv_polynomial n k) :
+  ((to_regular_fun : mv_polynomial n k →+* k[V]) : mv_polynomial n k → k[V]) F = 0
   ↔ F ∈ 𝕀 V :=
 begin
   rw mem_𝕀_iff,
@@ -219,5 +234,5 @@ end
 TODO -- ask on Zulip why f is implicit and x explicit (note the trouble this caused me in map_zero')
 
 mv_polynomial.eval_one : ∀ {X : Type u_2} {R : Type u_1} [_inst_1 : comm_semiring R] (x : X → R), eval x 1 = 1
-mv_polynomial.eval_zero : ∀ {α : Type ?} {σ : Type ?} [_inst_1 : comm_semiring α] {f : σ → α}, eval f 0 = 0
+mv_polynomial.eval_zero : ∀ {α : Type ?} {n : Type ?} [_inst_1 : comm_semiring α] {f : n → α}, eval f 0 = 0
 -/
