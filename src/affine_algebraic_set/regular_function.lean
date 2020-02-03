@@ -221,5 +221,3 @@ TODO -- ask on Zulip why f is implicit and x explicit (note the trouble this cau
 mv_polynomial.eval_one : ∀ {X : Type u_2} {R : Type u_1} [_inst_1 : comm_semiring R] (x : X → R), eval x 1 = 1
 mv_polynomial.eval_zero : ∀ {α : Type ?} {σ : Type ?} [_inst_1 : comm_semiring α] {f : σ → α}, eval f 0 = 0
 -/
-
-end regular_fun
