@@ -70,10 +70,10 @@ def comap (φ : V →ᵣ W) : regular_fun W →+* regular_fun V :=
       sorry
     end
   },
-  map_one' := _,
-  map_mul' := _,
-  map_zero' := _,
-  map_add' := _ }
+  map_one' := sorry,
+  map_mul' := sorry,
+  map_zero' := sorry,
+  map_add' := sorry }
 
 def comp (g : W →ᵣ Y) (f : V →ᵣ W) : V →ᵣ Y :=
 { to_regular_fun := λ u, sorry,
