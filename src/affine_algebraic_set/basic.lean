@@ -48,6 +48,9 @@ variable {σ : Type*}
 -- In Lean, the multivariable polynomial ring k[X₁, X₂, ..., Xₙ] is
 -- denoted `mv_polynomial σ k`. We could use better notation.
 -- The set 𝔸ⁿ or kⁿ is denoted `σ → k` (which means maps from {1,2,...,n} to k).
+-- We use local notation for this.
+
+local notation `𝔸ⁿ` := σ → k
 
 -- We now make some definitions which we'll need in the course.
 
@@ -96,6 +99,7 @@ structure affine_algebraic_set (k : Type*) [comm_semiring k] (σ : Type*) :=
 namespace affine_algebraic_set
 
 -- this is invisible notation so mathematicians don't need to understand the definition
+/-- An affine algebraic set can be regarded as a subset of 𝔸ⁿ -/
 instance : has_coe_to_fun (affine_algebraic_set k σ) :=
 { F := λ _, _,
   coe := carrier
@@ -117,15 +121,15 @@ begin
   simpa, -- TODO -- why no debugging output?
 end
 
--- Do I want this instance?
--- /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
--- instance : has_mem (σ → k) (affine_algebraic_set k n) :=
--- ⟨λ x V, x ∈ V.carrier⟩
+-- Do I want this instance? Seems to be useful for regular functions
+/-- We can talk about elements of affine algebraic subsets of kⁿ  -/
+instance : has_mem 𝔸ⁿ (affine_algebraic_set k σ) :=
+⟨λ x V, x ∈ V.carrier⟩
 
 -- Computer scientists insist on using ≤ for any order relation such as ⊆ .
 -- It is some sort of problem with notation I think. 
 instance : has_le (affine_algebraic_set k σ) :=
-⟨λ V W, (V : set (σ → k)) ⊆ W⟩
+⟨λ V W, (V : set 𝔸ⁿ) ⊆ W⟩
 
 instance : partial_order (affine_algebraic_set k σ) :=
 { le := (≤),

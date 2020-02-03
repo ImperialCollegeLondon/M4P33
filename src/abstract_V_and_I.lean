@@ -152,7 +152,7 @@ begin
     -- we need to prove x ∈ 𝕍 S and x ∈ 𝕍 T
     split,
     -- both of these follow easily from 𝕍_antimono
-      -- exact 𝕍_antimono _ _ _ _ hx, -- TODO(kmb)
+    -- exact 𝕍_antimono _ _ _ _ hx, -- TODO(kmb)
         -- why is the wrong underscore marked in red??
       exact 𝕍_antimono _ _ _ (subset_union_left _ _) hx,
       exact 𝕍_antimono _ _ _ (subset_union_right _ _) hx,
