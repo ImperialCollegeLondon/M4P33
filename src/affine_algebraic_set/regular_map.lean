@@ -6,6 +6,8 @@ Authors: Kevin Buzzard, and whoever else wants to join in.
 
 import affine_algebraic_set.regular_function
 
+-- we want k-algebra homomorphisms
+import ring_theory.algebra
 /-!
 
 # Regular maps
@@ -21,7 +23,6 @@ local notation `subset_of` := set
 
 variables {k : Type*} [integral_domain k] {m : Type*} {n : Type*} {p : Type*}
 
-
 local notation `k[m]` := mv_polynomial m k
 local notation `k[n]` := mv_polynomial n k
 local notation `k[p]` := mv_polynomial p k
@@ -34,17 +35,112 @@ local notation `𝔸ᵖ` := p → k
 -- However I do know that I'm trying to construct the category of affine algebraic sets
 -- over an algebraically closed field k so this should inform what we should be proving.
 
+-- We use polynomials
+open mv_polynomial
+
+-- We're proving theorems about affine algebraic sets so their names
+-- should go in the affine algebraic set namespace
+namespace affine_algebraic_set
+
+variables {V : affine_algebraic_set k m} {W : affine_algebraic_set k n}
+local notation `k[V]` := regular_fun V
+local notation `k[W]` := regular_fun W
+
+
+-- There are several equivalent definitions of a regular map. We begin
+-- by defining them and showing their equivalence.
+
+-- A →ₐ[R] B
+
+def is_morphism1 (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ)) : Prop :=
+∃ F : n → k[V], ∀ (v : (V : subset_of 𝔸ᵐ)) (i : n), (φ v : 𝔸ⁿ) i = F i v
+
+def is_morphism2 (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ)) : Prop :=
+∃ Φ : k[n] →ₐ[k] k[V], ∀ (v : (V : subset_of 𝔸ᵐ)) (i : n), (φ v : 𝔸ⁿ) i = Φ (X i) v
+
+def is_morphism3 (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ)) : Prop :=
+∃ Φ : k[n] →ₐ[k] k[V], ∀ (v : (V : subset_of 𝔸ᵐ)) (G : k[n]), G.eval (φ v) = (Φ G) v
+
+def is_morphism4 (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ)) : Prop :=
+∃ φstar : k[W] →ₐ[k] k[V], ∀ (v : (V : subset_of 𝔸ᵐ)) (g : k[W]), g (φ v) = (φstar g) v
+
+variable (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ))
+
+lemma four_implies_three : is_morphism4 φ → is_morphism3 φ :=
+begin
+  rintro ⟨φstar, hstar⟩,
+  use alg_hom.comp φstar mv_polynomial.to_regular_fun.algebra_map,
+  intros v G,
+  exact hstar v (to_regular_fun.to_fun G),
+end
+
+lemma three_implies_two : is_morphism3 φ → is_morphism2 φ :=
+begin
+  rintro ⟨Φ, hΦ⟩,
+  use Φ,
+  intros v i,
+  rw [←hΦ v (X i), eval_X],
+end
+
+lemma two_implies_one : is_morphism2 φ → is_morphism1 φ :=
+begin
+  rintro ⟨Φ, hΦ⟩,
+  use (λ i, Φ (X i)),
+  intros v i,
+  exact hΦ v i,
+end
+
+lemma one_implies_two : is_morphism1 φ → is_morphism2 φ :=
+begin
+  rintro ⟨F, hF⟩,
+  unfold is_morphism2,
+  letI : is_semiring_hom (mv_polynomial.to_regular_fun.to_fun ∘ C : k → k[V]) := is_semiring_hom.comp _ _,
+  -- need k-algebra hom now
+  sorry
+  -- use ring_hom.of (eval₂ (mv_polynomial.to_regular_fun.to_fun ∘ C) F),
+  -- intros v i,
+  -- rw hF,
+  -- exact congr_fun (congr_arg regular_fun.to_fun (eval₂_X _ _ _).symm) v,
+end
+
+lemma two_implies_three : is_morphism2 φ → is_morphism3 φ :=
+begin
+  rintro ⟨Φ, hΦ⟩,
+  use Φ,
+  intros v G,
+  replace hΦ := hΦ v,
+  apply mv_polynomial.induction_on G,
+  { intro a,
+    rw eval_C,
+    show a = (Φ (algebra_map (mv_polynomial n k) a)) v,
+    rw alg_hom.commutes Φ a,
+    show a = (C a : k[m]).eval v,
+    rw eval_C,
+  },
+  { intros p q hp hq,
+    rw [eval_add, hp, hq, alg_hom.map_add],
+    refl
+  },
+  { intros p i h,
+    rw [eval_mul, h, eval_X, hΦ, alg_hom.map_mul],
+    refl
+  }
+end
+
+lemma three_implies_four : is_morphism3 φ → is_morphism4 φ := sorry
+
+#exit
 /-- A `morphism` between affine algebraic sets V ⊆ 𝔸ᵐ and W ⊆ 𝔸ⁿ, often called a regular map,
-is a pair: a function V → W, and a proof that the induced n "coordinate maps" (the
-composite maps V → W → 𝔸ⁿ → k with the final map being a projection) are regular maps -/
+is a pair: a function φ : V → W, and a proof that there exists a k-algebra homomorphism
+Φ : k[n] → k[V] such that for all t ≤ n and x ∈ V, φ(x)_t = (Φ X_t) x -/
 structure morphism (V : affine_algebraic_set k m) (W : affine_algebraic_set k n) :=
 (to_fun : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ))
-(is_algebraic' : ∀ (t : n), ∃ Ft : regular_fun V, ∀ (x : 𝔸ᵐ) (hx : x ∈ V), (to_fun ⟨x, hx⟩).1 t = Ft ⟨x, hx⟩)
+(is_algebraic' : ∃ (Φ : k[n] →ₐ[k] regular_fun V),  ∀ (t : n) (x : (V : subset_of 𝔸ᵐ)),
+  (to_fun x).1 t = Φ (X t) x)
 
 -- notation
 infixr ` →ᵣ `:25 := morphism
 
-open mv_polynomial
 
 namespace morphism
 
@@ -61,26 +157,27 @@ instance : has_coe_to_fun (V →ᵣ W) :=
   coe := morphism.to_fun }
 
 -- best attempt at prettiness so far
-lemma is_algebraic (φ : V →ᵣ W) (t : n) : ∃ Ft : k[V], ∀ (x : 𝔸ᵐ) (hx : x ∈ V),
-  (φ ⟨x, hx⟩).1 t = Ft ⟨x, hx⟩ := φ.is_algebraic' t
+lemma is_algebraic (φ : V →ᵣ W) : ∃ (Φ : k[n] →ₐ[k] k[V]), ∀ (t : n) (x : (V : subset_of 𝔸ᵐ)),
+  (φ x).1 t = Φ (X t) x := φ.is_algebraic'
 
 def id (V : affine_algebraic_set k m) : V →ᵣ V :=
 { to_fun := id,
   is_algebraic' := begin
-    intro t,
-    use (regular_fun.mk' (X t)),
-    intros x hx,
-    show x t = eval x (X t),
-    rw eval_X,
+    use (to_regular_fun.algebra_map),
+    intros t x,
+    exact (eval_X t).symm,
   end }
 
-lemma some_spec (φ : V →ᵣ W) (x : (V : subset_of 𝔸ᵐ)) (t : n) :
-  classical.some (φ.is_algebraic t) x = (φ x).1 t:=
-begin
-  cases x,
-  exact (classical.some_spec (φ.is_algebraic t) _ _).symm,
-end
+-- lemma some_spec (φ : V →ᵣ W) (x : (V : subset_of 𝔸ᵐ)) (t : n) :
+--   classical.some (φ.is_algebraic t) x = (φ x).1 t:=
+-- begin
+--   cases x,
+--   exact (classical.some_spec (φ.is_algebraic t) _ _).symm,
+-- end
 
+-- lemma some_spec' (φ : V →ᵣ W) (x : (V : subset_of 𝔸ᵐ)) :
+-- (λ (t : n), classical.some (φ.is_algebraic t) x) = (λ (t : n), (φ x).1 t) :=
+-- by ext t; apply some_spec φ x t
 
 /-- A regular map between varieties gives a ring map on regular functions. -/
 def comap (φ : V →ᵣ W) : k[W] →+* k[V] :=
@@ -89,15 +186,25 @@ def comap (φ : V →ᵣ W) : k[W] →+* k[V] :=
     is_regular' := begin
     unfold is_regular,
       cases f.is_regular with F hF,
-      let AAA := φ.is_algebraic',
+      cases φ.is_algebraic with Φ HΦ,
+      cases to_regular_fun.surjective (Φ F) with G hG,
+      use G,
+      intro x,
+      rw ←hF,
+      unfold_coes at hG,
+      have H : (to_regular_fun.to_fun : k[n] → k[V]) G x = 0,
+      show ((to_regular_fun G : k[V]) ( x : (V : subset_of 𝔸ᵐ))) = _,
       use eval₂
         (C : k → k[m])
         (λ t, classical.some ((classical.some (φ.is_algebraic t)).is_regular) : n → k[m])
         F,
       intro x,
       rw ←hF,
-      -- now need to use AAA
-      show _ = eval (_ : n → k) F,
+      rw eval_eval₂
+      -- now need to use mk'.some_spec
+      -- suffices : eval (x : m → k) (eval₂ (C : k → k[m]) (λ t, (φ x).1 t) F) = eval (φ x) F,
+      show eval (x : m → k) (eval₂ _ _ _) = _,
+      rw some_spec' φ x,
       -- I think I need to rewrite
       -- conv begin
       --   to_lhs,

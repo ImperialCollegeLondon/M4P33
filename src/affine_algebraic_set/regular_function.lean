@@ -4,8 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Buzzard, and whoever else wants to join in.
 -/
 
-import affine_algebraic_set.basic -- definition of an affine alg set
-import affine_algebraic_set.I -- the kernel of the evaluation map is 𝕀
+ -- need the definition of an affine alg set
+import affine_algebraic_set.basic
+
+ -- need so I can state that the kernel of the evaluation map is 𝕀
+import affine_algebraic_set.I
+
 /-!
 
 # Regular functions
@@ -19,8 +23,9 @@ by more than one polynomial in general.
 
 -/
 
-
-variables {k : Type*} [integral_domain k] {n : Type*}
+-- I think it might all work with commutative semirings but
+-- let's let k be a commutative ring.
+variables {k : Type*} [comm_ring k] {n : Type*}
 
 local notation `𝔸ⁿ` := n → k
 local notation `k[n]` := mv_polynomial n k
@@ -59,13 +64,21 @@ instance : has_coe_to_fun (k[V]) :=
 
 variable {V}
 
-def mk' : k[n] → k[V] := λ F,
-{ to_fun := λ x, F.eval x, -- i.e. F(x)
-  is_regular' := ⟨F, λ x, rfl⟩ }
-
 /-- A regular function is induced from a polynomial -/
 lemma is_regular (f : k[V]): ∃ F : k[n],
    ∀ (x : (V : subset_of 𝔸ⁿ)), F.eval x = f x := f.is_regular'
+
+variable (V)
+
+def mk' (V : affine_algebraic_set k n) (F : k[n]) : regular_fun V :=
+{ to_fun := λ x, F.eval x, -- i.e. F(x)
+  is_regular' := ⟨F, λ x, rfl⟩ }
+
+variable {V}
+
+def mk'.some_spec (F : k[n]) (x : (V : subset_of 𝔸ⁿ)) :
+  (classical.some (mk' V F).is_regular).eval x = _ := classical.some_spec (mk' V F).is_regular x
+
 
 
 /- Two regular functions are equal if and only if their
@@ -172,6 +185,8 @@ instance : comm_ring (k[V]) :=
   right_distrib := begin intros f g h, ext, apply right_distrib, end,
   mul_comm := begin intros f g, ext, apply mul_comm, end }
 
+#check algebra
+
 end regular_fun
 
 /-- The ring homomorphism from k[X₁, X₂, …, Xₙ] to k[V] -/
@@ -202,6 +217,72 @@ noncomputable def mv_polynomial.to_regular_fun : mv_polynomial n k →+* k[V] :=
   end
 }
 
+namespace regular_fun
+
+instance : has_scalar k k[V] :=
+{ smul := λ t f,
+  { to_fun := λ v, t * f v,
+    is_regular' := begin
+      cases f.is_regular with F hF,
+      use (C t) * F,
+      intro x,
+      rw [eval_mul, eval_C, hF]
+    end
+  }
+}
+
+instance : is_ring_hom (λ t, mk' V (C t)) :=
+{ map_one := begin
+    ext x,
+    unfold_coes,
+    unfold mk',
+    dsimp,
+    rw eval_one,
+    refl,
+  end,
+  map_mul := 
+  begin
+    intros s t,
+    ext x,
+    unfold_coes,
+    unfold mk', 
+    dsimp,
+    rw eval_C,
+    simp [eval_C],
+    refl,
+  end,
+  map_add := 
+  begin
+    intros s t,
+    ext x,
+    unfold_coes,
+    unfold mk',
+    dsimp,
+    simp [eval_C],
+    refl
+  end
+}.
+
+noncomputable instance : algebra k k[V] :=
+{ to_fun := (λ t, mk' V (C t)),
+  hom := by apply_instance,
+  commutes' := begin
+    intros r x,
+    apply mul_comm,
+  end,
+  smul_def' := begin
+    intros r f,
+    ext x,
+    show _ = mk' V (C r) x * f x,
+    unfold_coes,
+    unfold mk',
+    simp only [eval_C],
+    refl,
+  end
+}
+end regular_fun
+
+
 open mv_polynomial function
 
 lemma to_regular_fun.surjective :
@@ -229,6 +310,34 @@ begin
   { intros f x hx, exact f ⟨x, hx⟩},
   { intros f x, exact f x.1 x.2}
 end
+
+-- let's prove it's a k-algebra hom
+noncomputable def mv_polynomial.to_regular_fun.algebra_map : k[n] →ₐ[k] k[V] :=
+{ to_fun := to_regular_fun.to_fun,
+  map_one' := begin
+    ext x,
+    cases x with x hx,
+    exact eval_one x
+  end,
+  map_mul' := begin
+    intros f g,
+    ext x,
+    exact eval_mul,
+  end,
+  map_zero' := begin
+    ext x,
+    cases x with x hx,
+    convert @eval_zero _ _ _ x,
+  end,
+  map_add' := begin
+    intros f g,
+    ext x,
+    exact eval_add,
+  end,
+  commutes' := begin
+    intro s,
+    refl,
+  end }
 
 /-
 TODO -- ask on Zulip why f is implicit and x explicit (note the trouble this caused me in map_zero')

@@ -38,8 +38,8 @@ Martin Orr's lecture notes https://homepages.warwick.ac.uk/staff/Martin.Orr/2017
 algebraic geometry, algebraic variety
 -/
 
--- let k be a commutative ring
-variables {k : Type*} [comm_ring k]
+-- let k be a commutative ring (or even a semiring like ℕ)
+variables {k : Type*} [comm_semiring k]
 
 -- and let σ be any set -- but think of it as {1,2,3,...,n}. It's the set
 -- which indexes the variables of the polynomial ring we're thinking about.
@@ -121,9 +121,8 @@ begin
   simpa, -- TODO -- why no debugging output?
 end
 
--- Do I want this instance? Seems to be useful for regular functions
 /-- We can talk about elements of affine algebraic subsets of kⁿ  -/
-instance : has_mem 𝔸ⁿ (affine_algebraic_set k σ) :=
+instance foo : has_mem 𝔸ⁿ (affine_algebraic_set k σ) :=
 ⟨λ x V, x ∈ V.carrier⟩
 
 -- Computer scientists insist on using ≤ for any order relation such as ⊆ .
