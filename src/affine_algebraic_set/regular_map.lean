@@ -88,8 +88,6 @@ begin
   exact hΦ v i,
 end
 
-
-#check ring_hom
 lemma one_implies_two : is_morphism1 φ → is_morphism2 φ :=
 begin
   rintro ⟨F, hF⟩,
@@ -97,14 +95,27 @@ begin
   -- eval₂ gives the map
   let Φ.to_fun : mv_polynomial n k → regular_fun V := eval₂ (mv_polynomial.to_regular_fun.to_fun ∘ C) F,
   -- now need that it's a k-algebra hom.
-  let Φ.is_ring_hom : is_ring_hom Φ.to_fun := eval₂.is_ring_hom _ _,
+  letI Φ.is_ring_hom : is_ring_hom Φ.to_fun := eval₂.is_ring_hom _ _,
+  letI Φ.is_semiring_hom : is_semiring_hom Φ.to_fun := is_ring_hom.is_semiring_hom _,
+  letI foo : is_semiring_hom (to_regular_fun.to_fun ∘ C : k → k[V]) := is_semiring_hom.comp _ _,
+  let Φ.ring_hom := @ring_hom.of _ _ _ _ Φ.to_fun Φ.is_semiring_hom,
   let Φ : mv_polynomial n k →ₐ[k] regular_fun V :=
-  { to_fun := Φ.to_fun,
-    ..Φ.is_ring_hom},
+    { to_fun := Φ.to_fun,
+      commutes' := begin
+        intro t,
+        show eval₂ (to_regular_fun.to_fun ∘ C : k → k[V]) F (C t) = _,
+        convert eval₂_C _ _ _,
+        exact foo,
+      end,
+      ..Φ.ring_hom},
   use Φ,
   intros v i,
   rw hF,
-  -- exact congr_fun (congr_arg regular_fun.to_fun (eval₂_X _ _ _).symm) v,
+  apply congr_fun,
+  apply congr_arg,
+  show _ = eval₂ (to_regular_fun.to_fun ∘ C) F (X i),
+  convert (eval₂_X _ _ _).symm,
+  exact foo,
 end
 
 lemma two_implies_three : is_morphism2 φ → is_morphism3 φ :=
