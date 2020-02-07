@@ -142,7 +142,20 @@ begin
   }
 end
 
-lemma three_implies_four : is_morphism3 φ → is_morphism4 φ := sorry
+lemma three_implies_four : is_morphism3 φ → is_morphism4 φ :=
+begin
+  rintro ⟨Φ,hΦ⟩,
+  have hI : ∀ f : k[n], f ∈ 𝕀 W → Φ f = 0,
+  { intros f hf,
+    ext v,
+    rw ←hΦ,
+    rw mem_𝕀_iff at hf,
+    rw hf,
+    refl,
+    exact (φ v).2
+  },
+  sorry
+end
 
 #exit
 /-- A `morphism` between affine algebraic sets V ⊆ 𝔸ᵐ and W ⊆ 𝔸ⁿ, often called a regular map,
