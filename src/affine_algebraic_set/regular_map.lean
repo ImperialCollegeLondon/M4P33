@@ -50,8 +50,6 @@ local notation `k[W]` := regular_fun W
 -- There are several equivalent definitions of a regular map. We begin
 -- by defining them and showing their equivalence.
 
--- A →ₐ[R] B
-
 def is_morphism1 (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ)) : Prop :=
 ∃ F : n → k[V], ∀ (v : (V : subset_of 𝔸ᵐ)) (i : n), (φ v : 𝔸ⁿ) i = F i v
 
@@ -90,16 +88,22 @@ begin
   exact hΦ v i,
 end
 
+
+#check ring_hom
 lemma one_implies_two : is_morphism1 φ → is_morphism2 φ :=
 begin
   rintro ⟨F, hF⟩,
   unfold is_morphism2,
-  letI : is_semiring_hom (mv_polynomial.to_regular_fun.to_fun ∘ C : k → k[V]) := is_semiring_hom.comp _ _,
-  -- need k-algebra hom now
-  sorry
-  -- use ring_hom.of (eval₂ (mv_polynomial.to_regular_fun.to_fun ∘ C) F),
-  -- intros v i,
-  -- rw hF,
+  -- eval₂ gives the map
+  let Φ.to_fun : mv_polynomial n k → regular_fun V := eval₂ (mv_polynomial.to_regular_fun.to_fun ∘ C) F,
+  -- now need that it's a k-algebra hom.
+  let Φ.is_ring_hom : is_ring_hom Φ.to_fun := eval₂.is_ring_hom _ _,
+  let Φ : mv_polynomial n k →ₐ[k] regular_fun V :=
+  { to_fun := Φ.to_fun,
+    ..Φ.is_ring_hom},
+  use Φ,
+  intros v i,
+  rw hF,
   -- exact congr_fun (congr_arg regular_fun.to_fun (eval₂_X _ _ _).symm) v,
 end
 
