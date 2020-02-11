@@ -185,8 +185,6 @@ instance : comm_ring (k[V]) :=
   right_distrib := begin intros f g h, ext, apply right_distrib, end,
   mul_comm := begin intros f g, ext, apply mul_comm, end }
 
-#check algebra
-
 end regular_fun
 
 /-- The ring homomorphism from k[X₁, X₂, …, Xₙ] to k[V] -/
@@ -282,10 +280,9 @@ noncomputable instance : algebra k k[V] :=
 }
 end regular_fun
 
-
 open mv_polynomial function
 
-lemma to_regular_fun.surjective :
+lemma mv_polynomial.to_regular_fun.surjective :
   surjective
     ((to_regular_fun : mv_polynomial n k →+* k[V]) : mv_polynomial n k → k[V]) :=
 begin
@@ -312,7 +309,7 @@ begin
 end
 
 -- let's prove it's a k-algebra hom
-noncomputable def mv_polynomial.to_regular_fun.algebra_map : k[n] →ₐ[k] k[V] :=
+noncomputable def mv_polynomial.to_regular_fun_algebra_map : k[n] →ₐ[k] k[V] :=
 { to_fun := to_regular_fun.to_fun,
   map_one' := begin
     ext x,

@@ -8,6 +8,10 @@ import affine_algebraic_set.regular_function
 
 -- we want k-algebra homomorphisms
 import ring_theory.algebra
+
+-- we want facts about k-algebra homs that aren't in mathlib
+import for_mathlib.ring_theory.algebra
+
 /-!
 
 # Regular maps
@@ -67,7 +71,7 @@ variable (φ : (V : subset_of 𝔸ᵐ) → (W : subset_of 𝔸ⁿ))
 lemma four_implies_three : is_morphism4 φ → is_morphism3 φ :=
 begin
   rintro ⟨φstar, hstar⟩,
-  use alg_hom.comp φstar mv_polynomial.to_regular_fun.algebra_map,
+  use alg_hom.comp φstar mv_polynomial.to_regular_fun_algebra_map,
   intros v G,
   exact hstar v (to_regular_fun.to_fun G),
 end
@@ -154,7 +158,27 @@ begin
     refl,
     exact (φ v).2
   },
-  sorry
+  have hfΦ : ∀ (f : mv_polynomial n k),
+    (to_regular_fun_algebra_map : mv_polynomial n k →ₐ[k] regular_fun W) f = 0 → Φ f = 0,
+  { intros f hf,
+    apply hI,
+    intros x hx, 
+    show (mv_polynomial.to_regular_fun_algebra_map :
+      mv_polynomial n k →ₐ[k] regular_fun W) f ⟨x, hx⟩ = 0,
+    rw hf,
+    refl
+  },
+  existsi
+    (alg_hom.quot.lift mv_polynomial.to_regular_fun_algebra_map to_regular_fun.surjective Φ hfΦ :
+    regular_fun W →ₐ[k] regular_fun V),
+  intros v g,
+  cases to_regular_fun.surjective g with G hG,
+  rw ←hG,
+  convert hΦ v G,
+  apply congr_fun _ v,
+  dsimp,
+  apply congr_arg,
+  refine alg_hom.quot.thm' _ _ Φ _ G,
 end
 
 #exit
