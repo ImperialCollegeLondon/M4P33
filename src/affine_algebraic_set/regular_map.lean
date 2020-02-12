@@ -25,7 +25,7 @@ Definition and basic properties of regular maps
 -/
 local notation `subset_of` := set
 
-variables {k : Type*} [integral_domain k] {m : Type*} {n : Type*} {p : Type*}
+variables {k : Type*} [comm_ring k] {m : Type*} {n : Type*} {p : Type*}
 
 local notation `k[m]` := mv_polynomial m k
 local notation `k[n]` := mv_polynomial n k
@@ -258,8 +258,6 @@ def comp (φ : W →ᵣ Y) (ψ : V →ᵣ W) : V →ᵣ Y :=
     refl,
   end⟩
 }
-
-
 
 end morphism
 
