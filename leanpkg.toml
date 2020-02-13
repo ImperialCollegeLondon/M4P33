@@ -1,8 +1,8 @@
 [package]
 name = "M4P33"
 version = "0.1"
-lean_version = "3.4.2"
+lean_version = "leanprover-community/lean:3.5.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "69099f00ea5bdd2a7692bf3edcfa5a9a6cc5f348"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "aa4da84a2558c3ff5aaa10366fd2412dcfb85e6b"}
