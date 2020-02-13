@@ -4,35 +4,35 @@ Noetherian topological spaces
 
 -/
 
-import topology.basic data.set.basic
-
-namespace topology
+-- this import gives us irreducible topological spaces
+import topology.subset_properties
 
 open set
 
 open_locale classical
 
-/-- A subspace Y of a topological space X is *irreducible* if it is non-empty,
-and for every cover by two closed sets C₁ and C₂, one of the Cᵢ has to be Y. -/
-def is_irreducible {X : Type*} [topological_space X] (Y : set X) : Prop :=
-(∃ x, x ∈ Y) ∧ ∀ C₁ C₂ : set X,
-  is_closed C₁ → is_closed C₂ → Y ⊆ C₁ ∪ C₂ → Y ⊆ C₁ ∨ Y ⊆ C₂
+lemma irred_iff_not_union_closed {X : Type*} [topological_space X] (Y : set X) :
+is_irreducible Y ↔ Y.nonempty ∧ ∀ C₁ C₂ : set X,
+  is_closed C₁ → is_closed C₂ → Y ⊆ C₁ ∪ C₂ → Y ⊆ C₁ ∨ Y ⊆ C₂ :=
+begin
+  split,
+  { rintro ⟨h0, h⟩,
+    split, exact h0,
+    rwa ←is_preirreducible_iff_closed_union_closed,
+  },
+  { rintro ⟨h0, h⟩,
+    split, assumption,
+    rwa is_preirreducible_iff_closed_union_closed,
+  }
+end
+
 
 /-- A non-empty Y is irreducible iff every non-empty open subset of Y is dense -/
 lemma irred_iff_nonempty_open_dense {X : Type*} [topological_space X] (Y : set X):
-is_irreducible Y ↔ (∃ x, x ∈ Y) ∧
+is_irreducible Y ↔ Y.nonempty ∧
   ∀ U₁ U₂ : set X, is_open U₁ → is_open U₂ →
-  U₁ ∩ Y ≠ ∅ → U₂ ∩ Y ≠ ∅ → U₁ ∩ U₂ ∩ Y ≠ ∅ :=
-have function.surjective (has_neg.neg : set X → set X) :=
-  λ x, ⟨-x, compl_compl x⟩,
-begin
-  dsimp only [is_irreducible],
-  rw [← forall_iff_forall_surj this, forall_swap,
-      ← forall_iff_forall_surj this],
-  finish [set.ext_iff, set.subset_def]
-end
+  (Y ∩ U₁).nonempty → (Y ∩ U₂).nonempty → (Y ∩ (U₁ ∩ U₂)).nonempty := iff.rfl
 
--- in the below, I bet "affine algebraic set" can be replaced by "Noetherian topological space".
 
 /-
 Corollary 5.3. Let S be a irreducible topological space and U ⊆ S a non-empty
@@ -56,15 +56,6 @@ begin
 end
 
 /-
-Definition. Let X be a topological space. An irreducible component of X is
-a maximal irreducible subset of X.
-
--/
-
-def irreducible_component {X : Type*} [topological_space X] (S : set X) : Prop :=
-is_irreducible S ∧ ∀ T, S ⊆ T → is_irreducible T → S = T
-
-/-
 
 A topological space is Noetherian if it satisfies the descending chain
 condition for open subsets
@@ -81,7 +72,6 @@ They're called the irred cpts of Y.
 
 -/
 
-def 
 /-
 Proof: existence: the set of non-empty closed subsets which can't be written
 as a finite union of irreds is empty because it can't have a minimal
@@ -109,4 +99,3 @@ Then V 1 , . . . , V r are precisely the irreducible components of V .
 
 -/
 
-end topology
