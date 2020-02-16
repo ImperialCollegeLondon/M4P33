@@ -90,7 +90,7 @@ begin
      assumption,
   },
 
-  -- use Zorn
+  -- use well-ordering -- if S isn't empty then the minimal element gives us a contradiction
   sorry
 end
 
