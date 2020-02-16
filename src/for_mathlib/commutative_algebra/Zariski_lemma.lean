@@ -7,6 +7,10 @@ as a k-algebra, then K is also finitely-generated as a k-module
 
 import ring_theory.integral_closure field_theory.subfield
 
+import linear_algebra.finite_dimensional
+
+import for_mathlib.finset -- Chris' lemma about S - {s}
+
 example : 2 + 2 = 4 := rfl
 
 open_locale classical
@@ -23,13 +27,13 @@ begin
   exact algebra.mem_top,
 end
 
-universes u v
+universes u
 
-theorem Zariski's_lemma
+instance Zariski's_lemma
   -- let k be a field
   (k : Type u) [discrete_field k]
   -- and let k ⊆ K be another field
-  (K : Type v) [discrete_field K] [algebra k K] 
+  (K : Type u) [discrete_field K] [algebra k K] 
   -- Assume that there's a finite subset S of K
   (S : finset K)
   -- which generates K as a k-algebra
@@ -38,7 +42,7 @@ theorem Zariski's_lemma
   -- Then
   :
   -- K is finite-dimensional as a k-vector space
-(⊤ : submodule k K).fg
+  finite_dimensional k K
 :=
 begin
   -- I will show that if K is a field and S is a finite subset, 
@@ -57,7 +61,9 @@ intro hSgen,
   -- tower law and induction)
   { convert fg_adjoin_of_finite (finset.finite_to_set S) h_int,
     rw hSgen,
-    exact (subalgebra.coe_submodule_top k K).symm,
+    rw finite_dimensional.iff_fg,
+    apply congr_arg,
+    convert (subalgebra.coe_submodule_top k K).symm,
   },
   -- The remaining case is where S contains an element transcendental over k.
   push_neg at h_int,
@@ -66,12 +72,15 @@ intro hSgen,
   let L := field.closure ((set.range (algebra_map K : k → K)) ∪ {s}),
   -- then K = L(S - {s})
   -- and |S - {s}| < |S|, so by induction, K is algebraic over L,
-
-      sorry,
+  have hKL : finite_dimensional L K,
+  { refine IH (S \ {s}) (finset.diff_singleton_ssub hs) ↥L _,
+  -- NB this is a proof that K=L(S - {s})
+  
+    sorry},
+  sorry,
     -- by the inductive hypo, K is algebraic over L, so it's
     -- algebraic over k[s][1/D] for some denominator D; this
     -- means k[s][1/D] is a field, which can't happen (it implies
     -- that D is in every maximal ideal of k[s] and hence 1+D is in
     -- none of them, thus 1+D is in k, so D is too, contradiction)
 end
-
