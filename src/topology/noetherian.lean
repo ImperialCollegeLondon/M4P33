@@ -7,6 +7,9 @@ Noetherian topological spaces
 -- this import gives us irreducible topological spaces
 import topology.subset_properties
 
+-- this gives us the type of open sets in a top space
+import topology.opens
+
 open set
 
 open_locale classical
@@ -26,7 +29,6 @@ begin
   }
 end
 
-
 /-- A non-empty Y is irreducible iff every non-empty open subset of Y is dense -/
 lemma irred_iff_nonempty_open_dense {X : Type*} [topological_space X] (Y : set X):
 is_irreducible Y ↔ Y.nonempty ∧
@@ -41,7 +43,7 @@ open subset. Then U is irreducible (in the subspace topology).
 
 lemma open_irred {X : Type*} [topological_space X]
   (S : set X) (hiS : is_irreducible S) (V : set X) (hV : is_open V) :
-  (∃ x, x ∈ V ∩ S) → is_irreducible (V ∩ S) :=
+  (V ∩ S).nonempty → is_irreducible (V ∩ S) :=
 begin
   rintro ⟨x, hx⟩,
   rw irred_iff_nonempty_open_dense,
@@ -61,6 +63,39 @@ A topological space is Noetherian if it satisfies the descending chain
 condition for open subsets
 
 -/
+
+namespace topological_space
+
+open_locale classical
+
+def is_noetherian (X : Type*) [topological_space X] : Prop :=
+well_founded ((>) : opens X → opens X → Prop)
+
+/-- In a Noetherian top space X, every non-empty closed subset C can be
+expressed as a finite union of irreducible closed subsets C_i. -/
+theorem finite_union_irreducibles {X : Type*} [topological_space X] (hX : is_noetherian X)
+  (C : set X) (hC : is_closed C) :
+  ∃ ι : finset (set X), sUnion (ι.to_set) = C ∧ ∀ Ci ∈ ι, is_irreducible Ci :=
+begin
+  let S := {C : set X | is_closed C ∧ ¬ (∃ ι : finset (set X), sUnion (ι.to_set) = C ∧ ∀ Ci ∈ ι, is_irreducible Ci)},
+  suffices : S = ∅,
+  { rw ←compl_univ_iff at this,
+    have hC2 : C ∈ -S,
+      rw this,
+      exact mem_univ C,
+      change ¬(is_closed C ∧
+     ¬∃ (ι : finset (set X)), ⋃₀ finset.to_set ι = C ∧ ∀ (Ci : set X), Ci ∈ ι → is_irreducible Ci) at hC2,
+     push_neg at hC2,
+     cases hC2, contradiction,
+     assumption,
+  },
+
+  -- use Zorn
+  sorry
+end
+
+#check zorn.chain
+end topological_space
 
 
 /-
