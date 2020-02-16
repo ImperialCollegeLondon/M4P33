@@ -1,0 +1,16 @@
+Zariski lemma
+
+NSS
+
+Affine alg sets are Noetherian
+
+Noetherian top spaces are finite union
+of irred components
+
+V irred iff I(V) prime
+
+Rational maps
+
+Everything from projective varieties onwards
+[note: I will probably not get there this year
+unless people join in]
