@@ -94,7 +94,6 @@ begin
   sorry
 end
 
-#check zorn.chain
 end topological_space
 
 
