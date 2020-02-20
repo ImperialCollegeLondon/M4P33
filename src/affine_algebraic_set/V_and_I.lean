@@ -63,3 +63,26 @@ begin
     -- Use y ∈ 𝕍(S)
     from HS,
 end
+
+lemma 𝕀_inj_on_𝕍 {S T : set(mv_polynomial σ k)} : 𝕀(𝕍(S)) = 𝕀(𝕍(T)) → 𝕍(S) = 𝕍(T) :=
+begin
+intro H,
+have H1 := congr_arg 𝕍 H,
+rw [𝕀_of_𝕍, 𝕀_of_𝕍] at H1,
+exact H1,
+end
+
+lemma 𝕀_strantimono_on_𝕍 {S T : set(mv_polynomial σ k)} :
+  𝕍 S < 𝕍 T → 𝕀(𝕍(T)) < 𝕀(𝕍(S)) :=
+begin
+intro lt,
+have H := 𝕀_antimono (𝕍 S) (𝕍 T) (le_of_lt lt),
+cases (@eq_or_lt_of_le (set (mv_polynomial σ k)) _ _ _ H),
+{
+    exfalso,
+    have H1 := 𝕀_inj_on_𝕍 h,
+    apply ne_of_lt lt,
+    apply H1.symm,
+},
+{ exact h },
+end
