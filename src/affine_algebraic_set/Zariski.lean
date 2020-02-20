@@ -104,19 +104,6 @@ begin
   intro h, rw h,
 end
 
-#check neg_lt_neg
-
-theorem compl_lt_compl {α : Type*} (U V : set α) : -U < -V → V < U :=
-begin
-intro H,
-split,
-  rw ←compl_subset_compl,
-  exact H.1,
-cases H, intro, apply H_right, 
-rw [←compl_subset_compl, compl_compl, compl_compl],
-exact a,
-end
-
 theorem zariski_wf {k : Type*} {n : Type*} [fintype n] [integral_domain k] [is_noetherian k k] :
   well_founded ((>) : (opens (n → k) → (opens (n → k)) → Prop)) :=
 begin
