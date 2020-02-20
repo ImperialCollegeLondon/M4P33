@@ -68,8 +68,12 @@ namespace topological_space
 
 open_locale classical
 
+variables {X : Type*} [topological_space X]
+
+instance for_ken : partial_order (closeds X) := subtype.partial_order _
+
 def is_noetherian (X : Type*) [topological_space X] : Prop :=
-well_founded ((>) : opens X → opens X → Prop)
+well_founded ((<) : closeds X → closeds X → Prop)
 
 /-- In a Noetherian top space X, every non-empty closed subset C can be
 expressed as a finite union of irreducible closed subsets C_i. -/
@@ -90,7 +94,7 @@ begin
      assumption,
   },
 
-  -- use well-ordering -- if S isn't empty then the minimal element gives us a contradiction
+  -- use well-foundedness -- if S isn't empty then the minimal element gives us a contradiction
   sorry
 end
 
