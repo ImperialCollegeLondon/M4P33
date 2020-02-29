@@ -147,3 +147,4 @@ intro hSgen,
   -- that D is in every maximal ideal of k[s] and hence 1+D is in
   -- none of them, thus 1+D is in k, so D is too, contradiction)
 end
+#check algebra.is_integral_trans
