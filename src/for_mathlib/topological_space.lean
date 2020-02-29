@@ -5,8 +5,6 @@ example : ℕ := 691
 
 open_locale classical
 
-set_option profiler true
-
 -- x ∈ closure S if and only if x ∈ C for all closed sets containing S.
 lemma mem_closure_iff' {X : Type*} [topological_space X] {S : set X} {x : X} :
   x ∈ closure S ↔ ∀ C : set X, is_closed C → S ⊆ C → x ∈ C :=
@@ -99,7 +97,7 @@ def filter_topology {X : Type*} (F : filter X) : topological_space (option X) :=
 }
 
 /-- If F is not ⊥ then the closure of X in option X is all of option X -/
-lemma none_not_open_of_F_ne_bot {X : Type*} (F : filter X) (hF : F ≠ ⊥) :
+lemma closure_range_sum_eq_univ {X : Type*} {F : filter X} (hF : F ≠ ⊥) :
   @closure (option X) (filter_topology F) (range some) = univ :=
 begin
   letI := filter_topology F,
@@ -129,35 +127,6 @@ end
 
 universe u
 
-/-
-pre refactor
-
-elaboration of compact_space_of_closed_pr2 took 1.46s
-elaboration of compact_space_of_closed_pr2 took 1.52s
-elaboration of compact_space_of_closed_pr2 took 1.52s
-elaboration of compact_space_of_closed_pr2 took 1.63s
-elaboration of compact_space_of_closed_pr2 took 1.65s
-elaboration of compact_space_of_closed_pr2 took 1.51s
-elaboration of compact_space_of_closed_pr2 took 1.55s
-elaboration of compact_space_of_closed_pr2 took 1.53s
-elaboration of compact_space_of_closed_pr2 took 1.6s
-elaboration of compact_space_of_closed_pr2 took 1.73s
-elaboration of compact_space_of_closed_pr2 took 1.55s
-elaboration of compact_space_of_closed_pr2 took 1.56s
-elaboration of compact_space_of_closed_pr2 took 1.64s
-elaboration of compact_space_of_closed_pr2 took 1.73s
-elaboration of compact_space_of_closed_pr2 took 1.61s
-elaboration of compact_space_of_closed_pr2 took 1.58s
-elaboration of compact_space_of_closed_pr2 took 1.71s
-elaboration of compact_space_of_closed_pr2 took 1.61s
-elaboration of compact_space_of_closed_pr2 took 1.65s
-elaboration of compact_space_of_closed_pr2 took 1.72s
-elaboration of compact_space_of_closed_pr2 took 1.73s
-elaboration of compact_space_of_closed_pr2 took 1.74s
-elaboration of compact_space_of_closed_pr2 took 1.92s
-elaboration of compact_space_of_closed_pr2 took 1.59s
-elaboration of compact_space_of_closed_pr2 took 1.64s
--/
 theorem compact_space_of_closed_pr2 {X : Type u} [topological_space X]
   (hclosed : ∀ (Y : Type u) [topological_space Y], is_closed_map (prod.snd : X × Y → Y)) :
   compact_space X :=
@@ -178,78 +147,60 @@ theorem compact_space_of_closed_pr2 {X : Type u} [topological_space X]
     refine subset_closure _,
     exact ⟨x, rfl⟩,
   },
-  -- If the image contains the extra point
-  by_cases hnone : none ∈ prod.snd '' D,
-  { -- then (x, extra point) is in the closure of D
-    rcases hnone with ⟨xy, hxy, hy⟩,
-    -- and we claim this x works
-    use xy.fst,
-    split, exact mem_univ _,
-    intro hbot,
-    rw ←filter.empty_in_sets_eq_bot at hbot,
-    rw filter.mem_inf_sets at hbot,
-    rcases hbot with ⟨A, hA, U, hU, hAU⟩,
-    rw subset_empty_iff at hAU,
-    revert hAU,
-    change A ∩ U ≠ ∅,
-    rw set.ne_empty_iff_nonempty,
-    rw mem_nhds_sets_iff at hU,
-    rcases hU with ⟨U', hU'U, hU', hxyU'⟩,
-    set V : set (X × option X) := set.prod U' (insert none (some '' A)),
-    have hV : is_open V,
-      apply is_open_prod hU',
-      change if none ∈ (insert none (some '' A)) then some ⁻¹' (insert none (some '' A)) ∈ F else true,
-      rw if_pos,
-        convert hA using 1,
-        ext a,
-        simp,
-      apply mem_insert,
-    have hxyV : xy ∈ V,
-      rw mem_prod,
-      split, exact hxyU',
-      rw hy,
-      apply mem_insert,
-    rw hD at hxy,
-    rw mem_closure_iff at hxy,
-    replace hxy := hxy V hV hxyV,
-    rcases hxy with ⟨_, hp, p, rfl⟩,
-    use p,
-    rw mem_prod at hp,
-    cases hp with hpU hpA,
-    split,
-      change some p ∈ _ at hpA,
-      rw mem_insert_iff at hpA,
-      cases hpA, cases hpA,
-      rcases hpA with ⟨p', hp', hpp'⟩,
-      convert hp',
-      exact option.some_inj.1 hpp'.symm,
-    apply hU'U,
-    exact hpU
+  -- and it's closed, so by `closure_range_sum_eq_univ` the projection is everything
+  -- and in particular contains the extra point
+  have hnone : none ∈ prod.snd '' D,
+    apply (closure_subset_iff_subset_of_is_closed hclosed).2 hX,
+    rw closure_range_sum_eq_univ hF,
+    exact mem_univ _,
+  -- Hence (x, extra point) is in the closure of the diagonal
+  rcases hnone with ⟨xy, hxy, hy⟩,
+  -- and we claim this x works
+  use xy.fst,
+  split, exact mem_univ _,
+  -- We have to show that every element of F meets every neighbourhood of X
+  intro hbot,
+  rw [←filter.empty_in_sets_eq_bot, filter.mem_inf_sets] at hbot,
+  -- so let A be an element of the filter, and let U be a neighbourhood of x (=xy.fst)
+  rcases hbot with ⟨A, hA, U, hU, hAU⟩,
+  rw subset_empty_iff at hAU,
+  revert hAU,
+  -- and let's show A ∩ U is non-empty.
+  change A ∩ U ≠ ∅,
+  rw set.ne_empty_iff_nonempty,
+  rw mem_nhds_sets_iff at hU,
+  -- U is a neighbourhood of x so it contains an open neighbourhood U' of x
+  rcases hU with ⟨U', hU'U, hU', hxyU'⟩,
+  -- Let V be the basic open set U' x (point union A)
+  set V : set (X × option X) := set.prod U' (insert none (some '' A)),
+  have hV : is_open V,
+  { apply is_open_prod hU',
+    change if none ∈ (insert none (some '' A)) then some ⁻¹' (insert none (some '' A)) ∈ F else true,
+    rw if_pos (mem_insert none _),
+    convert hA using 1,
+    ext a,
+    simp,
   },
-  { -- And if the image doesn't contain the extra point then 
-    -- in fact we can get a contradiction.
-    exfalso,
-    -- Indeed X is a subset of the image because (x,x) ∈ D
-    have hX : range some ⊆ prod.snd '' D,
-    { rintros _ ⟨x, rfl⟩,
-      use ⟨x, some x⟩,
-      split, swap, refl,
-      apply subset_closure,
-      use x
-    },
-    rw ←is_open_compl_iff at hclosed,
-    change if none ∈ -(prod.snd '' D) then some ⁻¹' -(prod.snd '' D) ∈ F
-      else true at hclosed,
-    replace hnone := mem_compl hnone,
-    rw if_pos hnone at hclosed,
-    apply hF,
-    rw ←filter.empty_in_sets_eq_bot,
-    convert hclosed,
-    symmetry,
-    rw eq_empty_iff_forall_not_mem,
-    intros x hx,
-    apply hx,
-    apply hX,
-    use x,
-  }  
+  -- Clearly (x,extra point) is in V
+  have hxyV : xy ∈ V,
+  { split, exact hxyU',
+    rw hy,
+    apply mem_insert
+  },
+  -- so V meets D and hence (because V is open) meets the diagonal
+  rw [hD, mem_closure_iff] at hxy,
+  replace hxy := hxy V hV hxyV,
+  -- so say it meets the diagonal at (p,p)
+  rcases hxy with ⟨_, hp, p, rfl⟩,
+  -- then p is easily checked to be in the intersection and we're done
+  use p,
+  cases hp with hpU hpA,
+  split,
+    change some p ∈ _ at hpA,
+    rw mem_insert_iff at hpA,
+    cases hpA, cases hpA,
+    rcases hpA with ⟨p', hp', hpp'⟩,
+    convert hp',
+    exact option.some_inj.1 hpp'.symm,
+  exact hU'U hpU,
 end⟩
