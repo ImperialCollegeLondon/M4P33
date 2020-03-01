@@ -74,6 +74,9 @@ We formalise the proof in "A note on Zariski's Lemma" by John McCabe,
 AMM Vol 83 No 7.
 -/
 
+-- needed to get [algebra R K] from (R : subalgebra k K) in next proof
+set_option class.instance_max_depth 38 
+
 -- We start with the following lemma.
 lemma not_fin_dim_of_fin_gen_alg_of_nonintegral
   -- Let k be a field
@@ -130,7 +133,13 @@ begin
   rcases clear_denominators k hX with ⟨D, hD0, hDL, hDden⟩, 
   -- then each sᵢ is integral over R := k[s][1/D].
   set R := adjoin k ({s, 1/D} : set K) with hR,
-  have hSint : ∀ s ∈ S, is_integral R s,
+  have hSint : ∀ t ∈ S, is_integral R t,
+  { intros t ht,
+    use 0,
+    sorry
+  },
+    
+  -- TODO
   -- Hence K=k[S] is integral over k[s][1/D]. 
   -- This means k[s][1/D] is a field (a standard trick; a non-zero element of k[s][1/D]
   -- has an inverse in K, which is integral over k[s][1/D] and now multiply up
@@ -141,6 +150,17 @@ begin
   sorry
 end
   
+#exit
+def XXX (A : Type*) [comm_ring A] (C : Type*) [comm_ring C] [algebra A C]
+  (B : subalgebra A C) : algebra B C := by apply_instance
+  
+#print XXX
+#check @subalgebra.to_algebra
+/-
+subalgebra.to_algebra :
+  Π (R : Type u_1) (A : Type u_2) [_inst_4 : comm_ring R] [_inst_5 : comm_ring A] [_inst_6 : algebra R A]
+  (S : subalgebra R A), algebra ↥S A
+  -/
   /-
 
 1 goal
