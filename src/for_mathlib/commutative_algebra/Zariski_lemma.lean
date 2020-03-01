@@ -261,5 +261,3 @@ begin
   convert not_fin_dim_of_fin_gen_alg_of_nonintegral k K S hSgen s hs hsnonint hKL, refl,
 
 end
-
-#check finset.image
