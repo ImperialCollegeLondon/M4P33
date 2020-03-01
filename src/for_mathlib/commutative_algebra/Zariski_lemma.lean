@@ -135,7 +135,8 @@ begin
   set R := adjoin k ({s, 1/D} : set K) with hR,
   have hSint : ∀ t ∈ S, is_integral R t,
   { intros t ht,
-    use 0,
+    unfold is_integral,
+    use minimal_polynomial hLKi t,
     sorry
   },
     
