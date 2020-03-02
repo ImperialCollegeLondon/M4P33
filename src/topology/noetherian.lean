@@ -193,7 +193,6 @@ theorem finite_union_irreducibles {X : Type*} [topological_space X]
     )
 end topological_space
 
-
 /-
 
 Hartshorne 1.5: in a Noetherian top space X, every nonempty closed subset Y
@@ -214,7 +213,32 @@ Now say we have 2 reps . Then Z_1 ⊆ ∪ Y_j so Z_1 = ∪ (Z_1 ∩ Y_j), but
 Z_1 is irred so Z_1 ⊆ Y_j for some j. Similarly Y_j ⊆ Z_k so k=1
 and now replacing Y by the closure of Y - Z_1 we're done by induction on
 the number of Z_i
+-/
 
+namespace topological_space
+
+def closeds.compl {X : Type*} [topological_space X] : closeds X → opens X :=
+λ C, ⟨-C.1, is_open_compl_iff.2 C.2⟩
+
+def opens.compl {X : Type*} [topological_space X] : opens X → closeds X :=
+λ C, ⟨-C.1, is_closed_compl_iff.2 C.2⟩
+
+lemma continuous.subtype {X : Type*} [topological_space X] {Y : set X} :
+  continuous (subtype.val : Y → X) := λ U hU, ⟨U, hU, rfl⟩
+
+def closeds.comap {X : Type*} [topological_space X] (Y : set X) :
+  closeds X → closeds Y :=
+λ C, (continuous.subtype.comap (C.compl)).compl
+
+lemma is_noetherian_subset (X : Type*) [topological_space X]
+  (hX : is_noetherian X) (Y : set X) : is_noetherian Y :=
+begin
+  sorry
+end
+
+end topological_space
+
+/-
 
 Proposition 5.4. Let V be an affine algebraic set. Then:
 (1) The union of the irreducible components of V is all of V .
