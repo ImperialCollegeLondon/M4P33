@@ -1,4 +1,7 @@
 import affine_algebraic_set.V
+import topology.opens
+import affine_algebraic_set.V_and_I
+import for_mathlib.calle_set
 
 namespace affine_algebraic_set
 
@@ -6,7 +9,8 @@ variables {k : Type*} [integral_domain k] {σ : Type*}
 
 local notation `𝔸ⁿ` := σ → k
 
-open set 
+open set
+open topological_space
 
 instance Zariski_topology  :
   topological_space 𝔸ⁿ := 
@@ -18,18 +22,18 @@ instance Zariski_topology  :
   is_open_univ :=
   begin
     -- we know that the whole set will be the required set, so we "use univ"
-    use (univ : set (mv_polynomial σ k)),
+    use (set.univ : set (mv_polynomial σ k)),
     -- Use fact that V(univ) = ∅
     rw 𝕍_univ,
     -- Putting goal into canonical form, i.e. use the frontend notations such
     -- as - instead of compl
     -- this is important because rewrites wont recognize definitionally
     -- equivalent statements as the same
-    show univ = - ∅,
+    show set.univ = - ∅,
     -- Now that we are using canonical form, rewrites will work again.
     -- So we finish up by using fact
     -- that -(∅) = univ
-    rw compl_empty, 
+    rw compl_empty,
   end,
   -- Now we show that being open is preserved by intersections.
   is_open_inter :=
@@ -98,6 +102,29 @@ begin
     intro h, ext x, apply not_iff_not.1, rw [←mem_compl_iff, ←mem_compl_iff],
     congr', apply_instance, apply_instance,
   intro h, rw h,
+end
+
+theorem zariski_wf {k : Type*} {n : Type*} [fintype n] [integral_domain k] [is_noetherian k k] :
+  well_founded ((>) : (opens (n → k) → (opens (n → k)) → Prop)) :=
+begin
+  have subrel : ∀ (V U: opens (n → k)), U < V → 𝕀' (-↑U) < 𝕀' (-↑V),
+    {
+      intros U V lt,
+      have exists_U_eq_𝕍_S := (is_closed_iff (-↑U)).1 (is_closed_compl_iff.2 U.2),
+      cases exists_U_eq_𝕍_S with S U_eq_𝕍_S,
+      have exists_V_eq_𝕍_T := (is_closed_iff (-↑V)).1 (is_closed_compl_iff.2 V.2),
+      cases exists_V_eq_𝕍_T with T V_eq_𝕍_T,
+      rw [U_eq_𝕍_S, V_eq_𝕍_T, submodule.lt_def],
+      refine 𝕀_strantimono_on_𝕍 _,
+      rw [←U_eq_𝕍_S, ←V_eq_𝕍_T],
+      apply compl_lt_compl,
+      rw [compl_compl, compl_compl],
+      exact lt,
+    },
+  apply subrelation.wf subrel _,
+  refine @inv_image.wf _ _ (>) (λ U : opens (n → k), 𝕀' (-(↑U : set (n → k)))) _,
+  apply is_noetherian_iff_well_founded.1,
+  refine @is_noetherian_ring_mv_polynomial_of_fintype _ _ _ _ _inst_4,
 end
 
 end affine_algebraic_set
